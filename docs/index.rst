@@ -6,6 +6,8 @@ A rigorous physics-based framework for sensory tracer analysis with complete bio
 .. toctree::
    :maxdepth: 2
    :caption: Documentation:
+   
+   api/index
 
 Introduction
 ------------
