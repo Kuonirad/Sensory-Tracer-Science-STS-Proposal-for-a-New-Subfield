@@ -941,7 +941,7 @@ class NeuralTracerExperiment:
         
         # Initial tracer concentration - localized injection
         center_x, center_y, center_z = nx//4, ny//2, nz//2
-        sigma = min(nx, ny, nz) // 10
+        sigma = max(1, min(nx, ny, nz) // 10)  # Ensure sigma >= 1 to prevent division by zero
         
         initial_conc = np.zeros((nx, ny, nz))
         max_safe_concentration = 0.5e-6  # 0.5 μM - safe level
