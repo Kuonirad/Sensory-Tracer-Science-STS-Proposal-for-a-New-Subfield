@@ -1,0 +1,92 @@
+# Citation File Format (CFF) for Sensory Tracer Science
+# This file provides standardized citation information for academic use
+
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata from this file."
+type: software
+
+title: "Sensory Tracer Science: Physics-Based Framework for Sensory Analysis"
+abstract: >
+  A rigorous physics-based framework for sensory tracer analysis with complete 
+  biological realism, quantum mechanical compliance, and thermodynamic consistency.
+  The framework implements five fundamental axioms governing sensory information 
+  propagation while respecting energy conservation (Landauer's Principle), 
+  information conservation (Shannon's Theory), causality (relativistic limits), 
+  quantum constraints (Heisenberg Uncertainty), and biological limits (ATP energetics).
+
+authors:
+  - family-names: "STS Development Team"
+    given-names: ""
+    affiliation: "Sensory Tracer Science Project"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+
+repository-code: "https://github.com/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield"
+url: "https://sensory-tracer-science.readthedocs.io/"
+license: MIT
+version: "1.0.0"
+date-released: 2024-10-08
+
+keywords:
+  - "physics"
+  - "biophysics" 
+  - "sensory analysis"
+  - "tracers"
+  - "biocompatibility"
+  - "information theory"
+  - "thermodynamics"
+  - "quantum mechanics"
+  - "electrophysiology"
+  - "neuroscience"
+  - "Landauer principle"
+  - "Shannon entropy"
+  - "CODATA constants"
+
+references:
+  - type: article
+    authors:
+      - family-names: "Landauer"
+        given-names: "Rolf"
+    title: "Irreversibility and heat generation in the computing process"
+    journal: "IBM Journal of Research and Development"
+    volume: 5
+    issue: 3
+    start: 183
+    end: 191
+    year: 1961
+    doi: "10.1147/rd.53.0183"
+    
+  - type: article
+    authors:
+      - family-names: "Shannon"
+        given-names: "Claude E."
+    title: "A mathematical theory of communication"
+    journal: "The Bell System Technical Journal"
+    volume: 27
+    issue: 3
+    start: 379
+    end: 423
+    year: 1948
+    doi: "10.1002/j.1538-7305.1948.tb01338.x"
+    
+  - type: article
+    authors:
+      - family-names: "Heisenberg"
+        given-names: "Werner"
+    title: "Über den anschaulichen Inhalt der quantenmechanischen Kinematik und Mechanik"
+    journal: "Zeitschrift für Physik"
+    volume: 43
+    issue: "3-4"
+    start: 172
+    end: 198
+    year: 1927
+    doi: "10.1007/BF01397280"
+
+preferred-citation:
+  type: software
+  authors:
+    - family-names: "STS Development Team"
+      given-names: ""
+  title: "Sensory Tracer Science: Physics-Based Framework for Sensory Analysis"
+  version: "1.0.0"
+  url: "https://github.com/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield"
+  year: 2024

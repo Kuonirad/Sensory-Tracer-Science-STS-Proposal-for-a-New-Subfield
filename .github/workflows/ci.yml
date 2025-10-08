@@ -1,0 +1,150 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, "3.10", 3.11]
+        
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e .[dev]
+        
+    - name: Lint with flake8
+      run: |
+        flake8 sensory_tracer_science --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 sensory_tracer_science --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
+    - name: Format check with black
+      run: |
+        black --check sensory_tracer_science
+        
+    - name: Import sort check with isort
+      run: |
+        isort --check-only sensory_tracer_science
+        
+    - name: Type check with mypy
+      run: |
+        mypy sensory_tracer_science --ignore-missing-imports
+        
+    - name: Test with pytest
+      run: |
+        pytest -v --cov=sensory_tracer_science --cov-report=xml --cov-report=html
+        
+    - name: Validate STS framework
+      run: |
+        python validate_augmented_framework.py
+        
+    - name: Run enhanced tracer tests
+      run: |
+        python test_enhanced_tracer.py
+        
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
+
+  scientific-validation:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Validate physical constants (CODATA 2022)
+      run: |
+        python -c "
+        from sensory_tracer_science.core.sts_constants import *
+        assert abs(K_B - 1.380649e-23) < 1e-30, 'Boltzmann constant incorrect'
+        assert abs(HBAR - 1.054571817e-34) < 1e-40, 'Planck constant incorrect'
+        assert abs(C_VACUUM - 299792458.0) < 1e-6, 'Speed of light incorrect'
+        print('✅ All CODATA 2022 constants validated')
+        "
+        
+    - name: Validate Landauer compliance
+      run: |
+        python -c "
+        from sensory_tracer_science.core.sts_constants import STSLimits
+        landauer_min = STSLimits.landauer_limit(310.0)
+        assert landauer_min > 0, 'Landauer limit must be positive'
+        assert landauer_min < 1e-20, 'Landauer limit unrealistically high'
+        print(f'✅ Landauer limit validated: {landauer_min:.2e} J/bit')
+        "
+        
+    - name: Validate biocompatible tracer
+      run: |
+        python -c "
+        from sensory_tracer_science.tracers.biocompatible_neural import *
+        tracer = BiochemicalTracer('Test', 1000.0, 0.75, 1e-6)
+        params = BiologicalParameters()
+        geometry = {'length': 1e-4, 'width': 1e-4, 'height': 1e-4}
+        bio_tracer = BiocompatibleNeuralTracer(tracer, geometry, params)
+        print('✅ Biocompatible tracer instantiation successful')
+        "
+
+  documentation:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+        
+    - name: Install documentation dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e .[docs]
+        
+    - name: Build documentation
+      run: |
+        cd docs && make html
+        
+    - name: Check documentation links
+      run: |
+        cd docs && make linkcheck

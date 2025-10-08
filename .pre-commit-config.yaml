@@ -1,0 +1,122 @@
+# Pre-commit hooks for scientific code quality
+# Run with: pre-commit install && pre-commit run --all-files
+
+repos:
+  # Code formatting
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+        language_version: python3.8
+        args: [--line-length=88]
+
+  # Import sorting  
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=88]
+
+  # Linting
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        args: [--max-line-length=88, --extend-ignore=E203,W503]
+        additional_dependencies:
+          - flake8-docstrings
+          - flake8-bugbear
+          - flake8-comprehensions
+
+  # Type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.5.1
+    hooks:
+      - id: mypy
+        args: [--ignore-missing-imports, --python-version=3.8]
+        additional_dependencies: [numpy, scipy]
+
+  # Security scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: [-c, pyproject.toml]
+
+  # General quality checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: debug-statements
+      - id: requirements-txt-fixer
+
+  # Documentation quality
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        args: [--convention=google]
+
+  # Scientific code quality
+  - repo: local
+    hooks:
+      - id: validate-codata-constants
+        name: Validate CODATA 2022 constants
+        entry: python -c "
+          from sensory_tracer_science.core.sts_constants import *;
+          import sys;
+          assert abs(K_B - 1.380649e-23) < 1e-30, 'Boltzmann constant incorrect';
+          assert abs(HBAR - 1.054571817e-34) < 1e-40, 'Planck constant incorrect';
+          assert abs(C_VACUUM - 299792458.0) < 1e-6, 'Speed of light incorrect';
+          print('✅ CODATA 2022 constants validated')
+        "
+        language: system
+        pass_filenames: false
+
+      - id: validate-landauer-compliance  
+        name: Validate Landauer compliance
+        entry: python -c "
+          from sensory_tracer_science.core.sts_constants import STSLimits;
+          landauer = STSLimits.landauer_limit(310.0);
+          assert landauer > 0, 'Landauer limit must be positive';
+          assert landauer < 1e-20, 'Landauer limit unrealistic';
+          print(f'✅ Landauer limit: {landauer:.2e} J/bit')
+        "
+        language: system
+        pass_filenames: false
+
+      - id: validate-framework-integrity
+        name: Validate framework integrity
+        entry: python -c "
+          import sensory_tracer_science as sts;
+          assert sts.quick_validation_test(), 'Framework validation failed';
+          print('✅ Framework integrity validated')
+        "
+        language: system
+        pass_filenames: false
+
+  # Jupyter notebook quality
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.7.0
+    hooks:
+      - id: nbqa-black
+      - id: nbqa-isort
+      - id: nbqa-flake8
+
+  # Documentation build test
+  - repo: local
+    hooks:
+      - id: docs-build-test
+        name: Test documentation build
+        entry: bash -c "cd docs && make html"
+        language: system
+        pass_filenames: false
+        files: ^docs/

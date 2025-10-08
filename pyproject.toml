@@ -1,0 +1,168 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sensory-tracer-science"
+description = "Physics-based framework for sensory tracer analysis with biological realism"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "STS Development Team", email = "sts-dev@example.org"}
+]
+maintainers = [
+    {name = "STS Development Team", email = "sts-dev@example.org"}
+]
+keywords = [
+    "physics", "biophysics", "sensory-analysis", "tracers",
+    "biocompatibility", "information-theory", "thermodynamics"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dynamic = ["version"]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.21.0",
+    "scipy>=1.7.0",
+    "matplotlib>=3.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-xdist>=2.5.0",
+    "black>=22.0.0",
+    "isort>=5.10.0",
+    "flake8>=4.0.0",
+    "mypy>=0.950",
+    "pre-commit>=2.17.0",
+]
+docs = [
+    "sphinx>=4.5.0",
+    "sphinx-rtd-theme>=1.0.0",
+    "sphinxcontrib-bibtex>=2.4.0",
+    "myst-parser>=0.17.0",
+    "nbsphinx>=0.8.8",
+]
+jupyter = [
+    "jupyter>=1.0.0",
+    "ipywidgets>=7.7.0",
+    "jupyterlab>=3.4.0",
+]
+all = [
+    "sensory-tracer-science[dev,docs,jupyter]"
+]
+
+[project.urls]
+Homepage = "https://github.com/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield"
+Documentation = "https://sensory-tracer-science.readthedocs.io/"
+Repository = "https://github.com/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield"
+Issues = "https://github.com/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield/issues"
+Wiki = "https://github.com/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield/wiki"
+
+[project.scripts]
+sts-validate = "sensory_tracer_science.tools.validate:main"
+sts-test = "sensory_tracer_science.tools.test_runner:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "sensory_tracer_science.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["sensory_tracer_science*"]
+exclude = ["tests*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["sensory_tracer_science"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=sensory_tracer_science",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+testpaths = [
+    "tests",
+    "sensory_tracer_science/tests",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["sensory_tracer_science"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+exclude = [".git", "__pycache__", "build", "dist"]

@@ -1,9 +1,13 @@
-# 🧬 Sensory Tracer Science (STS) - A New Physics Subfield
+# 🧬 Sensory Tracer Science (STS) - Physics-Based Framework
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![CI](https://github.com/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield/workflows/CI/badge.svg)](https://github.com/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield/actions)
+[![codecov](https://codecov.io/gh/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield/branch/main/graph/badge.svg)](https://codecov.io/gh/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield)
+[![Documentation Status](https://readthedocs.org/projects/sensory-tracer-science/badge/?version=latest)](https://sensory-tracer-science.readthedocs.io/en/latest/?badge=latest)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![STS Framework](https://img.shields.io/badge/STS-Experimentally%20Ready-brightgreen.svg)](https://github.com/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield)
-[![Biocompatible](https://img.shields.io/badge/Biocompatible-In%20Vivo%20Ready-success.svg)](https://github.com/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield)
+[![CODATA 2022](https://img.shields.io/badge/CODATA-2022%20Compliant-blue.svg)](https://physics.nist.gov/cuu/Constants/)
 
 ## 🎯 **Project Overview**
 
