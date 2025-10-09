@@ -139,13 +139,13 @@ print(data.consistency)
 
 ## Scores
 
-| Score | Grade | What It Means |
-|-------|-------|---------------|
-| 90+   | A     | Great         |
-| 80-89 | B     | Good          |
-| 70-79 | C     | OK            |
-| 60-69 | D     | Poor          |
-| 0-59  | F     | Bad           |
+| Score | Grade | Meaning |
+|-------|-------|---------|
+| 90+   | A     | Great   |
+| 80-89 | B     | Good    |
+| 70-79 | C     | OK      |
+| 60-69 | D     | Poor    |
+| 0-59  | F     | Bad     |
 
 ## What Gets Checked
 
@@ -323,7 +323,7 @@ from readme_tool import check
 def main():
     if len(sys.argv) != 2:
         print("Usage: cli.py <file>")
-        return
+        exit(1)
     
     file = sys.argv[1]
     score = check(file)
@@ -333,8 +333,10 @@ def main():
     
     if score >= 80:
         print("Good")
+        exit(0)
     else:
         print("Bad")
+        exit(1)
 
 main()
 ```
@@ -343,7 +345,10 @@ main()
 
 ### Make Text Easy
 
-Use short words. Use short sentences. Use simple grammar. Avoid big words.
+- Use short words (1-2 parts)
+- Keep sentences under 8 words
+- Use simple grammar
+- Avoid big words
 
 Good:
 ```
@@ -352,15 +357,15 @@ This tool checks files. It is easy.
 
 Bad:
 ```
-This app analyzes docs fully.
+This app analyzes docs comprehensively.
 ```
 
 ### Add All Parts
 
 Must have:
 - Project name
-- Short info  
-- Install steps
+- Short description
+- Install steps  
 - Basic use
 - License
 
@@ -375,7 +380,11 @@ Add these:
 
 ### Keep It New
 
-Test all examples. Fix broken links. Update install steps. Match new code. Check version info.
+- Test all examples
+- Fix broken links
+- Update install steps
+- Match new code
+- Check version info
 
 ## FAQ
 
@@ -453,12 +462,12 @@ We reply fast.
 
 **Made by:**
 - John Doe (dev)
-- Jane Smith (design)  
+- Jane Smith (design)
 - Bob Lee (docs)
 
 **Thanks to:**
 - All users
-- Bug fixers
+- Bug fixers  
 - Code helpers
 - Open source fans
 

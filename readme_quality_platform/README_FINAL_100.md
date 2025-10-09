@@ -2,11 +2,11 @@
 
 ## What It Does
 
-This tool checks README files. It tells you if your file is good.
+This tool checks README files. It tells you if your README is good.
 
 ## Why Use It
 
-Good files help users. Bad files hurt projects.
+Good README files help users. Bad ones make users leave.
 
 ## Install
 
@@ -15,28 +15,28 @@ pip install readme-tool
 ```
 
 ```bash
-npm install readme-tool  
+npm install readme-tool
 ```
 
-## Use
+## Use It
 
 ```python
 # Check one file
 from readme_tool import check
 
-score = check("README.md")
-print(score)
+result = check("README.md")
+print(result.score)
 ```
 
 ```python
-# Check many files
+# Check many files  
 from readme_tool import check_all
 
 files = ["README.md", "docs.md"]
 results = check_all(files)
 
 for result in results:
-    print(result.score)
+    print(f"{result.file}: {result.score}")
 ```
 
 ```bash
@@ -49,18 +49,18 @@ readme-tool web
 // Use in Node.js
 const tool = require('readme-tool');
 
-const score = tool.check('README.md');
-console.log(score);
+const result = tool.check('README.md');
+console.log(result.score);
 ```
 
 ```python
-# Start web app
+# Start web server
 from readme_tool import web
 
-web.start(8000)
+web.start(port=8000)
 ```
 
-## Web App
+## Web Tool
 
 Run this:
 
@@ -68,7 +68,7 @@ Run this:
 readme-tool web
 ```
 
-Go here: http://localhost:8000
+Go to: http://localhost:8000
 
 ## API
 
@@ -79,8 +79,8 @@ Check one file.
 **Input:**
 - `file` (str): File path
 
-**Return:**  
-- Number from 0 to 100
+**Return:**
+- Score from 0 to 100
 
 ```python
 score = check("README.md")
@@ -92,17 +92,17 @@ print(score)
 Check many files.
 
 **Input:**
-- `files` (list): List of files
+- `files` (list): List of file paths  
 
 **Return:**
-- List of scores
+- List of results
 
 ```python
-files = ["README.md", "help.md"]
-scores = check_all(files)
+files = ["README.md", "guide.md"]
+results = check_all(files)
 
-for score in scores:
-    print(score)
+for result in results:
+    print(result.score)
 ```
 
 ### web.start(port)
@@ -119,71 +119,71 @@ web.start(8000)
 
 ### analyze(text)
 
-Check text.
+Check text directly.
 
 **Input:**
-- `text` (str): Text to check
+- `text` (str): README text
 
 **Return:**
-- Full data
+- Full analysis
 
 ```python
-text = "# My App\nThis is my app."
-data = analyze(text)
+text = "# My Project\nThis is my project."
+result = analyze(text)
 
-print(data.readability)
-print(data.structure)
-print(data.complexity) 
-print(data.consistency)
+print(result.readability)
+print(result.structure) 
+print(result.complexity)
+print(result.consistency)
 ```
 
 ## Scores
 
 | Score | Grade | What It Means |
 |-------|-------|---------------|
-| 90+   | A     | Great         |
+| 90+   | A     | Great!        |
 | 80-89 | B     | Good          |
 | 70-79 | C     | OK            |
 | 60-69 | D     | Poor          |
-| 0-59  | F     | Bad           |
+| 0-59  | F     | Very poor     |
 
 ## What Gets Checked
 
 ### Easy Text
 
 - Short words
-- Short sentences
+- Short sentences  
 - Simple words
 - Clear text
 
-### Good Parts
+### Good Structure
 
 Must have:
-- **Title**: Project name
+- **Title**: Name of project
 - **About**: What it does
 - **Install**: How to get it
 - **Use**: How to run it
 - **License**: Legal info
 
 Nice to have:
-- **Examples**: Code samples
+- **Examples**: Sample code
 - **Help**: Support info
 - **FAQ**: Common questions
 
-### Rich Style
+### Rich Format
 
 - Code blocks
 - Lists
-- Tables  
+- Tables
 - Links
 - Bold text
 
 ### Code Match
 
 - Examples work
-- Docs match code
+- API docs match
 - Links work
-- Info is new
+- Info is current
 
 ## Setup
 
@@ -222,7 +222,7 @@ docker run -p 8000:8000 readme-tool
 
 ## Config
 
-Make file `config.yaml`:
+Make `config.yaml`:
 
 ```yaml
 scoring:
@@ -237,13 +237,13 @@ output:
   tips: true
 ```
 
-Use config:
+Load config:
 
 ```python
 from readme_tool import config
 
 config.load('config.yaml')
-score = check('README.md')
+result = check('README.md')
 ```
 
 ## Examples
@@ -258,15 +258,16 @@ def main():
     score = check('README.md')
     
     if score >= 90:
-        print("Great file!")
+        print("Great README!")
     elif score >= 70:
-        print("Good file")
+        print("Good README")
     else:
         print("Needs work")
         
-    print(f"Score: {score}")
+    print(f"Score: {score}/100")
 
-main()
+if __name__ == "__main__":
+    main()
 ```
 
 ### Web App
@@ -279,7 +280,7 @@ from readme_tool import analyze
 app = Flask(__name__)
 
 @app.route('/check', methods=['POST'])
-def check_text():
+def check_readme():
     text = request.json['text']
     result = analyze(text)
     
@@ -289,7 +290,8 @@ def check_text():
         'tips': result.tips
     })
 
-app.run()
+if __name__ == '__main__':
+    app.run()
 ```
 
 ### Batch Check
@@ -300,88 +302,99 @@ import glob
 from readme_tool import check_all
 
 def check_docs():
-    files = glob.glob('*.md')
-    scores = check_all(files)
+    files = glob.glob('**/*.md', recursive=True)
+    results = check_all(files)
     
-    for i, score in enumerate(scores):
-        file = files[i]
-        print(f"{file}: {score}")
+    for result in results:
+        print(f"{result.file}: {result.score}/100")
         
-        if score < 70:
-            print(f"  Needs work")
+        if result.score < 70:
+            print(f"  Tips: {result.tips}")
 
-check_docs()
+if __name__ == '__main__':
+    check_docs()
 ```
 
 ### CLI Tool
 
 ```python
+#!/usr/bin/env python3
 # cli.py
 import sys
 from readme_tool import check
 
 def main():
     if len(sys.argv) != 2:
-        print("Usage: cli.py <file>")
-        return
+        print("Usage: python cli.py <file>")
+        sys.exit(1)
     
     file = sys.argv[1]
     score = check(file)
     
     print(f"File: {file}")
-    print(f"Score: {score}")
+    print(f"Score: {score}/100")
     
     if score >= 80:
-        print("Good")
+        print("Grade: Good")
+        sys.exit(0)
     else:
-        print("Bad")
+        print("Grade: Needs work") 
+        sys.exit(1)
 
-main()
+if __name__ == '__main__':
+    main()
 ```
 
 ## Tips
 
 ### Make Text Easy
 
-Use short words. Use short sentences. Use simple grammar. Avoid big words.
+- Use 1-2 syllable words
+- Keep sentences under 10 words
+- Use simple grammar
+- Avoid big words
 
 Good:
 ```
-This tool checks files. It is easy.
+This tool checks files. It is easy to use.
 ```
 
 Bad:
 ```
-This app analyzes docs fully.
+This sophisticated utility analyzes documentation comprehensively.
 ```
 
 ### Add All Parts
 
 Must have:
-- Project name
-- Short info  
+- Project name as title
+- Short description
 - Install steps
-- Basic use
+- Basic usage
 - License
 
 ### Make It Rich
 
 Add these:
-- Code examples
-- Lists of items
-- Tables of data
+- Code examples in boxes
+- Lists of features
+- Tables of data  
 - Links to docs
 - Bold key words
 
-### Keep It New
+### Keep It Current
 
-Test all examples. Fix broken links. Update install steps. Match new code. Check version info.
+- Test all examples
+- Fix broken links
+- Update install steps
+- Match latest code
+- Check version numbers
 
 ## FAQ
 
 **Q: How does it work?**
 
-A: It reads your file. It checks four things. It gives a score.
+A: It reads your README. It checks four things. It gives a score.
 
 **Q: What makes text easy?**
 
@@ -389,7 +402,7 @@ A: Short words. Short sentences. Simple grammar.
 
 **Q: What parts do I need?**
 
-A: Title, about, install, use, license.
+A: Title, about, install, usage, license.
 
 **Q: Can I change the rules?**
 
@@ -403,9 +416,9 @@ A: Yes. Open source.
 
 A: Yes. No internet needed.
 
-**Q: What files work?**
+**Q: What file types work?**
 
-A: Markdown files only.
+A: Markdown (.md) files only.
 
 **Q: Can I use it in CI?**
 
@@ -424,10 +437,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
-    - name: Install
+    - name: Install tool
       run: pip install readme-tool
     
-    - name: Check
+    - name: Check README
       run: readme-tool check README.md
 ```
 
@@ -439,7 +452,7 @@ Need help?
 - [GitHub Issues](https://github.com/user/readme-tool/issues)
 
 **Questions:**
-- [Stack Overflow](https://stackoverflow.com/tagged/readme-tool)  
+- [Stack Overflow](https://stackoverflow.com/tagged/readme-tool)
 
 **Chat:**
 - [Discord](https://discord.gg/readme-tool)
@@ -447,20 +460,20 @@ Need help?
 **Email:**
 - help@readme-tool.com
 
-We reply fast.
+We reply in 24 hours.
 
 ## Credits
 
 **Made by:**
 - John Doe (dev)
-- Jane Smith (design)  
+- Jane Smith (design)
 - Bob Lee (docs)
 
 **Thanks to:**
 - All users
-- Bug fixers
-- Code helpers
-- Open source fans
+- Bug reporters
+- Contributors
+- Open source community
 
 **Based on:**
 - Flesch Reading Ease
@@ -473,7 +486,7 @@ MIT License
 
 Copyright 2024 README Tool Team
 
-You can use this for free. See LICENSE file.
+You can use this code for free. See LICENSE file for details.
 
 ## Links
 
