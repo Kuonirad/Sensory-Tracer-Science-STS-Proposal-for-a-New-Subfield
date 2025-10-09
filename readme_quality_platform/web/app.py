@@ -11,6 +11,10 @@ from typing import Dict, Any, Optional
 import json
 import tempfile
 from datetime import datetime
+import logging
+
+# Configure basic logging if not already configured elsewhere
+logging.basicConfig(level=logging.INFO)
 
 from fastapi import FastAPI, Request, Form, UploadFile, File, HTTPException
 from fastapi.templating import Jinja2Templates
@@ -279,11 +283,12 @@ async def api_batch_analyze(
                     "summary": analyzer.get_analysis_summary(analysis)
                 })
                 
+                logging.exception(f"Error analyzing target '{target}' in batch analysis")
             except Exception as e:
                 results.append({
                     "target": target,
                     "success": False,
-                    "error": str(e)
+                    "error": "An internal error occurred during analysis"
                 })
         
         # Generate batch summary
@@ -298,13 +303,14 @@ async def api_batch_analyze(
             "results": results,
             "summary": batch_summary,
             "chart": batch_chart,
+        logging.exception("Unhandled exception in batch analyze API endpoint")
             "total_processed": len(targets_list)
         }
         
     except Exception as e:
         return {
             "success": False,
-            "error": str(e)
+            "error": "An internal error occurred during batch analysis"
         }
 
 
