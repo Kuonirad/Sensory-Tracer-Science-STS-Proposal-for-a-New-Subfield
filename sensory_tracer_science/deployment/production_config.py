@@ -249,6 +249,30 @@ class BackupConfig:
             self.backup_regions = ["us-east-1", "us-west-2"]
 
 
+@dataclass
+class SystemConfig:
+    """System-wide configuration parameters."""
+
+    # Application settings
+    app_name: str = "sts-framework"
+    app_version: str = "1.0.0"
+    debug: bool = False
+    log_level: str = "INFO"
+
+    # Server settings
+    host: str = "0.0.0.0"
+    port: int = 8080
+    workers: int = 4
+
+    # Runtime metadata
+    build_timestamp: Optional[str] = None
+    environment: Optional[str] = None
+
+    def __post_init__(self):
+        if self.build_timestamp is None:
+            self.build_timestamp = datetime.now().isoformat()
+
+
 class ProductionConfig:
     """
     Comprehensive production configuration manager for STS deployment.
