@@ -1023,5 +1023,427 @@ class TestEdgeCasesAndErrorHandling:
             assert "tomography" in str(e).lower() or "measurement" in str(e).lower()
 
 
+# Additional comprehensive edge case tests to push coverage to 90%+
+class TestQuantumTracerAdvancedEdgeCases:
+    """Advanced edge case tests for quantum tracer module to achieve 90%+ coverage."""
+    
+    def setup_method(self):
+        """Set up test fixtures for advanced edge case testing."""
+        self.default_params = QuantumSensorParameters()
+        self.source = QuantumEntangledPhotonSource(self.default_params)
+        self.interferometer = HongOuMandelInterferometer(self.default_params)
+        self.tracer = QuantumEnhancedSensoryTracer(self.default_params)
+        self.experiment = QuantumTracerExperiment(self.default_params)
+    
+    def test_quantum_photon_pair_boundary_conditions(self):
+        """Test quantum photon pair at physical boundaries."""
+        # Test at Planck frequency boundary
+        planck_wavelength = 1.616e-35  # Planck length
+        planck_freq = C_VACUUM / planck_wavelength
+        
+        try:
+            planck_pair = QuantumPhotonPair(
+                wavelength=planck_wavelength,
+                frequency=planck_freq,
+                entanglement_fidelity=1.0,
+                polarization_state=1.0 + 0.0j,
+                creation_time=0.0
+            )
+            
+            # Energy should be enormous but finite
+            assert np.isfinite(planck_pair.energy_per_photon)
+            assert planck_pair.energy_per_photon > 1e10  # Should be very high energy
+            
+        except (ValueError, OverflowError):
+            # Acceptable to fail at Planck scale
+            pass
+    
+    def test_photon_pair_complex_polarization_edge_cases(self):
+        """Test photon pairs with complex polarization edge cases."""
+        # Test with infinite polarization magnitude
+        with pytest.raises((ValueError, OverflowError)):
+            QuantumPhotonPair(
+                wavelength=800e-9,
+                frequency=C_VACUUM / 800e-9,
+                entanglement_fidelity=1.0,
+                polarization_state=float('inf') + 1j * float('inf'),
+                creation_time=0.0
+            )
+        
+        # Test with NaN polarization
+        with pytest.raises((ValueError, TypeError)):
+            QuantumPhotonPair(
+                wavelength=800e-9,
+                frequency=C_VACUUM / 800e-9,
+                entanglement_fidelity=1.0,
+                polarization_state=float('nan') + 1j * float('nan'),
+                creation_time=0.0
+            )
+    
+    def test_quantum_sensor_parameters_edge_validation(self):
+        """Test quantum sensor parameter validation at edges."""
+        # Test zero detection efficiency
+        zero_efficiency_params = QuantumSensorParameters(detection_efficiency=0.0)
+        assert zero_efficiency_params.detection_efficiency == 0.0
+        
+        # Test maximum detection efficiency
+        max_efficiency_params = QuantumSensorParameters(detection_efficiency=1.0)
+        assert max_efficiency_params.detection_efficiency == 1.0
+        
+        # Test invalid negative values
+        with pytest.raises(ValueError):
+            QuantumSensorParameters(detection_efficiency=-0.1)
+            
+        with pytest.raises(ValueError):
+            QuantumSensorParameters(entanglement_fidelity=-0.1)
+            
+        with pytest.raises(ValueError):
+            QuantumSensorParameters(temperature=-1.0)
+    
+    def test_entangled_photon_source_extreme_parameters(self):
+        """Test entangled photon source with extreme parameters."""
+        # Test with very high pump power
+        high_power_params = QuantumSensorParameters()
+        high_power_params.pump_power = 1e3  # 1 kW
+        
+        source = QuantumEntangledPhotonSource(high_power_params)
+        
+        # Generation rate should be very high
+        pair = source.generate_entangled_pair(0.0, 1e-12, 0.0)
+        assert isinstance(pair, QuantumPhotonPair)
+        
+        # Test Heisenberg limit with extreme parameters
+        heisenberg_limit = source.calculate_heisenberg_limit()
+        assert np.isfinite(heisenberg_limit)
+        assert heisenberg_limit > 0
+    
+    def test_entangled_photon_source_zero_pump_power(self):
+        """Test entangled photon source with zero pump power."""
+        zero_power_params = QuantumSensorParameters()
+        zero_power_params.pump_power = 0.0
+        
+        source = QuantumEntangledPhotonSource(zero_power_params)
+        
+        # Should still generate pairs (with poor efficiency)
+        pair = source.generate_entangled_pair(0.0, 1e-12, 0.0)
+        assert isinstance(pair, QuantumPhotonPair)
+        assert pair.entanglement_fidelity <= 0.1  # Should be very low
+    
+    def test_hom_interferometer_identical_photon_pairs(self):
+        """Test HOM interferometer with perfectly identical photon pairs."""
+        identical_pair = QuantumPhotonPair(
+            wavelength=800e-9,
+            frequency=C_VACUUM / 800e-9,
+            entanglement_fidelity=1.0,
+            polarization_state=1.0 + 0.0j,
+            creation_time=0.0
+        )
+        
+        # Identical photons should show perfect Hong-Ou-Mandel effect
+        prob = self.interferometer.hong_ou_mandel_probability(
+            identical_pair, identical_pair, 0.0
+        )
+        
+        # Should be close to 0 for perfect interference
+        assert prob < 0.1
+    
+    def test_hom_interferometer_orthogonal_polarizations(self):
+        """Test HOM interferometer with orthogonal polarizations."""
+        pair1 = QuantumPhotonPair(
+            wavelength=800e-9,
+            frequency=C_VACUUM / 800e-9,
+            entanglement_fidelity=1.0,
+            polarization_state=1.0 + 0.0j,  # Horizontal
+            creation_time=0.0
+        )
+        
+        pair2 = QuantumPhotonPair(
+            wavelength=800e-9,
+            frequency=C_VACUUM / 800e-9,
+            entanglement_fidelity=1.0,
+            polarization_state=0.0 + 1.0j,  # Vertical
+            creation_time=0.0
+        )
+        
+        # Orthogonal polarizations should not interfere
+        prob = self.interferometer.hong_ou_mandel_probability(pair1, pair2, 0.0)
+        
+        # Should be close to classical limit (0.5)
+        assert 0.4 < prob < 0.6
+    
+    def test_coincidence_measurement_empty_photon_list(self):
+        """Test coincidence measurement with empty photon list."""
+        coincidences = self.interferometer.measure_coincidences([], 1e-3)
+        
+        assert coincidences['total_coincidences'] == 0
+        assert coincidences['coincidence_rate'] == 0.0
+        assert coincidences['g2_zero'] == 0.0
+    
+    def test_coincidence_measurement_single_photon(self):
+        """Test coincidence measurement with single photon pair."""
+        single_pair = [QuantumPhotonPair(
+            wavelength=800e-9,
+            frequency=C_VACUUM / 800e-9,
+            entanglement_fidelity=1.0,
+            polarization_state=1.0 + 0.0j,
+            creation_time=1e-9
+        )]
+        
+        coincidences = self.interferometer.measure_coincidences(single_pair, 1e-3)
+        
+        # Should handle single photon gracefully
+        assert coincidences['total_coincidences'] >= 0
+        assert np.isfinite(coincidences['coincidence_rate'])
+    
+    def test_g2_correlation_function_extreme_delays(self):
+        """Test g2 correlation function with extreme time delays."""
+        # Create photon pairs
+        photon_pairs = [
+            QuantumPhotonPair(800e-9, C_VACUUM/800e-9, 0.9, 1.0+0.0j, i*1e-9)
+            for i in range(100)
+        ]
+        
+        # Test with very long delay
+        long_delay = 1e-3  # 1 ms delay
+        g2_long = self.interferometer.g2_correlation_function(
+            photon_pairs, long_delay, 1e-6
+        )
+        
+        assert np.isfinite(g2_long)
+        
+        # Test with very short delay
+        short_delay = 1e-15  # 1 fs delay
+        g2_short = self.interferometer.g2_correlation_function(
+            photon_pairs, short_delay, 1e-6
+        )
+        
+        assert np.isfinite(g2_short)
+    
+    def test_quantum_phase_sensing_zero_phase_range(self):
+        """Test quantum phase sensing with zero phase range."""
+        sensing_params = {
+            'phase_shift_range': 0.0,  # No phase variation
+            'measurement_points': 10,
+            'integration_time': 1e-6
+        }
+        
+        results = self.tracer.quantum_phase_sensing(sensing_params)
+        
+        # Should handle zero phase range
+        assert isinstance(results, dict)
+        assert 'measured_phases' in results
+        assert 'phase_sensitivity' in results
+    
+    def test_quantum_phase_sensing_single_measurement_point(self):
+        """Test quantum phase sensing with single measurement point."""
+        sensing_params = {
+            'phase_shift_range': np.pi,
+            'measurement_points': 1,  # Single point
+            'integration_time': 1e-6
+        }
+        
+        results = self.tracer.quantum_phase_sensing(sensing_params)
+        
+        # Should handle single measurement point
+        assert len(results['measured_phases']) == 1
+        assert np.isfinite(results['phase_sensitivity'])
+    
+    def test_quantum_phase_sensing_infinite_integration_time(self):
+        """Test quantum phase sensing with very long integration time."""
+        sensing_params = {
+            'phase_shift_range': np.pi/4,
+            'measurement_points': 5,
+            'integration_time': 1e6  # Very long integration time
+        }
+        
+        results = self.tracer.quantum_phase_sensing(sensing_params)
+        
+        # Should handle long integration times
+        assert np.isfinite(results['phase_sensitivity'])
+        # Longer integration should improve sensitivity
+        assert results['phase_sensitivity'] < 1e-3
+    
+    def test_quantum_state_tomography_empty_pairs(self):
+        """Test quantum state tomography with empty photon pairs."""
+        measurement_basis = ['H', 'V', 'D', 'A', 'R', 'L']
+        
+        try:
+            result = self.tracer.quantum_state_tomography([], measurement_basis)
+            
+            # Should handle empty list gracefully
+            assert isinstance(result, dict)
+            
+        except ValueError as e:
+            # Acceptable to raise error for empty input
+            assert "empty" in str(e).lower() or "insufficient" in str(e).lower()
+    
+    def test_quantum_state_tomography_single_basis(self):
+        """Test quantum state tomography with single measurement basis."""
+        photon_pairs = [
+            QuantumPhotonPair(800e-9, C_VACUUM/800e-9, 0.9, 1.0+0.0j, i*1e-9)
+            for i in range(10)
+        ]
+        
+        single_basis = ['H']  # Only horizontal measurement
+        
+        result = self.tracer.quantum_state_tomography(photon_pairs, single_basis)
+        
+        # Should handle single basis (though results will be limited)
+        assert isinstance(result, dict)
+        if 'density_matrix' in result:
+            # Matrix should be valid even with limited measurements
+            assert result['density_matrix'].shape[0] >= 1
+    
+    def test_validate_quantum_tracer_extreme_conditions(self):
+        """Test quantum tracer validation under extreme conditions."""
+        # Test with zero-efficiency parameters
+        zero_params = QuantumSensorParameters(detection_efficiency=0.0)
+        zero_tracer = QuantumEnhancedSensoryTracer(zero_params)
+        
+        validation_result = zero_tracer.validate_quantum_tracer()
+        
+        assert isinstance(validation_result, dict)
+        assert 'quantum_validation_passed' in validation_result
+        
+        # Zero efficiency should likely fail validation
+        if not validation_result['quantum_validation_passed']:
+            assert 'detection_efficiency_sufficient' in validation_result
+            assert not validation_result['detection_efficiency_sufficient']
+    
+    def test_validate_quantum_tracer_perfect_conditions(self):
+        """Test quantum tracer validation under perfect conditions."""
+        # Test with perfect parameters
+        perfect_params = QuantumSensorParameters(
+            detection_efficiency=1.0,
+            entanglement_fidelity=1.0,
+            temperature=0.01,  # Very low temperature
+        )
+        perfect_tracer = QuantumEnhancedSensoryTracer(perfect_params)
+        
+        validation_result = perfect_tracer.validate_quantum_tracer()
+        
+        assert isinstance(validation_result, dict)
+        assert validation_result['quantum_validation_passed'] is True
+        assert validation_result['entanglement_quality_sufficient'] is True
+        assert validation_result['detection_efficiency_sufficient'] is True
+    
+    def test_quantum_experiment_edge_case_parameters(self):
+        """Test quantum experiment with edge case parameters."""
+        # Test with zero photon budget
+        zero_budget_params = {
+            'measurement_type': 'phase_sensing',
+            'target_sensitivity': 1e-6,
+            'measurement_duration': 1e-3,
+            'photon_budget': 0  # Zero photons
+        }
+        
+        results = self.experiment.run_quantum_sensing_experiment(zero_budget_params)
+        
+        # Should handle zero photon budget
+        assert isinstance(results, dict)
+        
+        # Validation should likely fail
+        validation = results['validation_results']
+        if 'photon_flux_within_limits' in validation:
+            assert validation['photon_flux_within_limits'] is False
+    
+    def test_quantum_experiment_extreme_sensitivity_target(self):
+        """Test quantum experiment with extreme sensitivity targets."""
+        # Test with impossibly high sensitivity target
+        extreme_params = {
+            'measurement_type': 'phase_sensing',
+            'target_sensitivity': 1e-20,  # Extremely high sensitivity
+            'measurement_duration': 1e-9,  # Very short time
+            'photon_budget': 10  # Very few photons
+        }
+        
+        results = self.experiment.run_quantum_sensing_experiment(extreme_params)
+        
+        # Should handle extreme parameters
+        assert isinstance(results, dict)
+        
+        # Performance metrics should indicate limitations
+        performance = results['performance_metrics']
+        assert 'quantum_advantage' in performance
+        # Quantum advantage might be poor with extreme constraints
+    
+    def test_quantum_report_generation_edge_cases(self):
+        """Test quantum report generation with edge case results."""
+        # Test with minimal results structure
+        minimal_results = {
+            'experiment_setup': {},
+            'quantum_measurements': {},
+            'performance_metrics': {},
+            'validation_results': {'quantum_validation_passed': False},
+            'quantum_advantage': 0.0
+        }
+        
+        report = self.experiment.generate_quantum_report(minimal_results)
+        
+        # Should handle minimal results
+        assert isinstance(report, str)
+        assert len(report) > 100  # Should still generate some report
+        
+        # Test with missing fields
+        incomplete_results = {
+            'experiment_setup': {
+                'measurement_type': 'phase_sensing',
+            },
+            # Missing other required fields
+        }
+        
+        try:
+            report_incomplete = self.experiment.generate_quantum_report(incomplete_results)
+            assert isinstance(report_incomplete, str)
+        except KeyError:
+            # Acceptable to fail with incomplete results
+            pass
+    
+    def test_run_quantum_tracer_tests_robustness(self):
+        """Test robustness of run_quantum_tracer_tests function."""
+        # Run multiple times to check consistency
+        results_sets = []
+        for _ in range(3):
+            results = run_quantum_tracer_tests()
+            results_sets.append(results)
+        
+        # All runs should return valid dictionaries
+        for results in results_sets:
+            assert isinstance(results, dict)
+            assert len(results) > 0
+        
+        # Structure should be consistent across runs
+        keys_sets = [set(results.keys()) for results in results_sets]
+        assert all(keys == keys_sets[0] for keys in keys_sets)
+    
+    def test_implementation_limits_adherence(self):
+        """Test adherence to implementation limits from constants."""
+        # Test that quantum tracer respects implementation limits
+        params = QuantumSensorParameters()
+        
+        # Check that parameters are within reasonable limits
+        assert params.detection_efficiency <= 1.0
+        assert params.entanglement_fidelity <= 1.0
+        assert params.temperature >= 0.0
+        assert params.coincidence_window > 0.0
+        assert params.central_wavelength > 0.0
+        
+        # Test photon generation within limits
+        source = QuantumEntangledPhotonSource(params)
+        
+        # Generate many pairs quickly
+        pairs = []
+        for i in range(100):
+            pair = source.generate_entangled_pair(i*1e-12, 1e-12, 0.0)
+            pairs.append(pair)
+            
+        # All pairs should have reasonable properties
+        for pair in pairs:
+            assert 0.0 <= pair.entanglement_fidelity <= 1.0
+            assert pair.wavelength > 0.0
+            assert pair.frequency > 0.0
+            assert np.isfinite(pair.energy_per_photon)
+
+
 if __name__ == "__main__":
     pytest.main([__file__])
