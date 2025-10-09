@@ -193,7 +193,7 @@ class TestCloudDeploymentIntegration(unittest.TestCase):
         self.assertIn("serverless_config", demo_result)
 
 
-class TestMonitoringAnalyticsIntegration(unittest.TestCase):
+class TestMonitoringSystemIntegration(unittest.TestCase):
     """Integration tests for monitoring analytics module."""
 
     def test_alert_severity_enum_usage(self):

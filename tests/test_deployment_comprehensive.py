@@ -37,16 +37,17 @@ from sensory_tracer_science.deployment.container_orchestration import (
 )
 from sensory_tracer_science.deployment.monitoring_analytics import (
     AlertRule,
-    MonitoringAnalytics,
+    MonitoringSystem,
     MonitoringMetric,
-    NotificationChannel,
+    AlertSeverity,
 )
 from sensory_tracer_science.deployment.production_config import (
     DatabaseConfig,
     DeploymentEnvironment,
-    ProductionConfigManager,
+    ProductionConfig,
     RedisConfig,
     SecurityConfig,
+    SecurityLevel,
     SystemConfig,
 )
 

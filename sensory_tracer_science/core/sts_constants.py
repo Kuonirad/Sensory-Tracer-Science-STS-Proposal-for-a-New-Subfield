@@ -603,7 +603,7 @@ def validate_uncertainty_propagation() -> Dict[str, Any]:
     # More lenient validation for Monte Carlo sampling - focus on order of magnitude
     try:
         assert results["logbb_mean_error"] < 0.5, "LogBB mean sampling error too large"
-        assert results["logbb_std_error"] < 0.5, "LogBB std sampling error too large"  
+        assert results["logbb_std_error"] < 0.5, "LogBB std sampling error too large"
         assert results["koff_mean_error"] < 50.0, "k_off mean sampling error too large"
         assert results["koff_std_error"] < 25.0, "k_off std sampling error too large"
     except AssertionError as e:
