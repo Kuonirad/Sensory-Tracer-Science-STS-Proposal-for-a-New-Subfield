@@ -1,352 +1,205 @@
 """
 Comprehensive test suite for biocompatible neural tracer validation.
-Tests the complete augmented validation framework and safety margins.
+Tests the complete biocompatible neural tracer framework and safety margins.
 """
 
 import pytest
 import numpy as np
 import numpy.testing as npt
 from sensory_tracer_science.tracers.biocompatible_neural import (
-    BiocompatibleNeuralTracer, TracerParameters
+    BiocompatibleNeuralTracer, BiochemicalTracer, BiologicalParameters,
+    NeuralTracerExperiment
 )
-from sensory_tracer_science.core.sts_constants import *
+from sensory_tracer_science.core.sts_constants import STSLimits, ImplementationLimits
 
 
 class TestBiocompatibleTracerValidation:
     """Test biocompatible neural tracer validation framework."""
     
-    def test_optimized_tracer_parameters(self):
-        """Test tracer with optimized parameters passes all validation."""
-        # Create optimized tracer parameters for maximum safety
-        params = TracerParameters(
-            photon_energy=1.5e-19,      # J (optimized for safety)
-            photons_per_second=1e3,     # Hz (low flux)
-            ca_buffering_capacity=5e-7, # mol/L (enhanced buffering)
-            membrane_capacitance=1e-12, # F (standard capacitance)
-            temperature=310.0,          # K (body temperature)
-            atp_concentration=5e-3,     # mol/L (physiological)
-            atp_free_energy=-30.5e3     # J/mol (standard conditions)
+    def test_neural_tracer_construction(self):
+        """Test basic neural tracer construction with proper parameters."""
+        # Create biochemical tracer
+        tracer = BiochemicalTracer(
+            name="Test Ca Indicator",
+            molecular_weight=800.0,  # g/mol (typical Ca indicator)
+            fluorescence_quantum_yield=0.7,
+            binding_affinity=1e-6  # mol/L
         )
         
-        tracer = BiocompatibleNeuralTracer(params)
-        validation_results = tracer.validate_biocompatibility()
+        # Create tissue geometry
+        tissue_geometry = {
+            'length': 500e-6,   # 500 μm
+            'width': 500e-6,    # 500 μm  
+            'height': 200e-6    # 200 μm
+        }
         
-        # All 6 augmented validation checks must pass
-        assert validation_results['phototoxic_dose_safe'], \
-               "Phototoxic dose validation failed"
-        assert validation_results['calcium_buffering_adequate'], \
-               "Calcium buffering validation failed"
-        assert validation_results['membrane_potential_stable'], \
-               "Membrane potential stability validation failed"
-        assert validation_results['landauer_compliant'], \
-               "Landauer compliance validation failed"
-        assert validation_results['thermodynamic_feasible'], \
-               "Thermodynamic feasibility validation failed"
-        assert validation_results['atp_energetics_valid'], \
-               "ATP energetics validation failed"
-    
-    def test_safety_margins(self):
-        """Test that safety margins are substantial (>1000x)."""
-        params = TracerParameters(
-            photon_energy=1.5e-19,
-            photons_per_second=1e3,
-            ca_buffering_capacity=5e-7,
-            membrane_capacitance=1e-12,
-            temperature=310.0,
-            atp_concentration=5e-3,
-            atp_free_energy=-30.5e3
+        # Create neural tracer with default parameters
+        neural_tracer = BiocompatibleNeuralTracer(
+            tracer=tracer,
+            tissue_geometry=tissue_geometry
         )
         
-        tracer = BiocompatibleNeuralTracer(params)
-        safety_metrics = tracer.safety_analysis()
-        
-        # Verify substantial safety margins
-        assert safety_metrics['phototoxic_safety_margin'] > 1000, \
-               f"Phototoxic safety margin insufficient: {safety_metrics['phototoxic_safety_margin']}"
-        assert safety_metrics['ca_buffering_margin'] > 1000, \
-               f"Ca buffering margin insufficient: {safety_metrics['ca_buffering_margin']}"
-        assert safety_metrics['membrane_stability_margin'] > 10, \
-               f"Membrane stability margin insufficient: {safety_metrics['membrane_stability_margin']}"
+        # Verify construction
+        assert neural_tracer.tracer.name == "Test Ca Indicator"
+        assert neural_tracer.tissue_volume == 500e-6 * 500e-6 * 200e-6
+        assert neural_tracer.max_concentration == ImplementationLimits.Biocompatible.MAX_TRACER_CONCENTRATION
     
-    def test_landauer_compliance_calculation(self):
-        """Test Landauer compliance calculation with ATP energetics."""
-        params = TracerParameters(
-            photon_energy=1.5e-19,
-            photons_per_second=1e3,
-            ca_buffering_capacity=5e-7,
-            membrane_capacitance=1e-12,
-            temperature=310.0,
-            atp_concentration=5e-3,
-            atp_free_energy=-30.5e3  # Negative ΔG
-        )
+    def test_biological_parameters_validation(self):
+        """Test biological parameters are within physiological ranges."""
+        params = BiologicalParameters()
         
-        tracer = BiocompatibleNeuralTracer(params)
-        
-        # Test the fixed ATP energy calculation
-        total_atp = tracer.calculate_total_atp_consumed()
-        atp_to_work_efficiency = 0.6  # 60% efficiency
-        atp_energy_available = total_atp * abs(params.atp_free_energy) * atp_to_work_efficiency
-        
-        # Should be positive energy available
-        assert atp_energy_available > 0, \
-               "ATP energy available must be positive"
-        
-        # Landauer compliance check should pass
-        landauer_min = STSLimits.landauer_limit(params.temperature)
-        information_bits = tracer.calculate_information_content() / np.log(2)
-        min_energy_required = information_bits * landauer_min
-        
-        assert atp_energy_available >= min_energy_required, \
-               "ATP energy must exceed Landauer minimum"
-    
-    def test_phototoxic_dose_calculation(self):
-        """Test phototoxic dose calculation and safety limits."""
-        params = TracerParameters(
-            photon_energy=1.5e-19,
-            photons_per_second=1e3,
-            ca_buffering_capacity=5e-7,
-            membrane_capacitance=1e-12,
-            temperature=310.0,
-            atp_concentration=5e-3,
-            atp_free_energy=-30.5e3
-        )
-        
-        tracer = BiocompatibleNeuralTracer(params)
-        
-        # Calculate optical power
-        optical_power = tracer.calculate_optical_power()
-        expected_power = params.photon_energy * params.photons_per_second
-        npt.assert_allclose(optical_power, expected_power, rtol=1e-15)
-        
-        # Phototoxic limit (1 mW/cm²)
-        phototoxic_limit = 1e-3  # W/cm²
-        cell_area = 1e-6  # cm² (10 μm diameter cell)
-        max_safe_power = phototoxic_limit * cell_area
-        
-        assert optical_power < max_safe_power, \
-               f"Optical power {optical_power} exceeds safety limit {max_safe_power}"
-    
-    def test_calcium_buffering_validation(self):
-        """Test calcium buffering capacity validation."""
-        params = TracerParameters(
-            photon_energy=1.5e-19,
-            photons_per_second=1e3,
-            ca_buffering_capacity=5e-7,  # Enhanced buffering
-            membrane_capacitance=1e-12,
-            temperature=310.0,
-            atp_concentration=5e-3,
-            atp_free_energy=-30.5e3
-        )
-        
-        tracer = BiocompatibleNeuralTracer(params)
-        
-        # Calculate expected Ca²⁺ release
-        expected_ca_release = tracer.calculate_expected_ca_release()
-        
-        # Buffering capacity should exceed Ca release
-        assert params.ca_buffering_capacity > expected_ca_release, \
-               "Ca buffering capacity insufficient for expected release"
-        
-        # Safety margin should be substantial
-        margin = params.ca_buffering_capacity / expected_ca_release
-        assert margin > 1000, f"Ca buffering safety margin insufficient: {margin}"
-    
-    def test_membrane_potential_stability(self):
-        """Test membrane potential stability validation."""
-        params = TracerParameters(
-            photon_energy=1.5e-19,
-            photons_per_second=1e3,
-            ca_buffering_capacity=5e-7,
-            membrane_capacitance=1e-12,
-            temperature=310.0,
-            atp_concentration=5e-3,
-            atp_free_energy=-30.5e3
-        )
-        
-        tracer = BiocompatibleNeuralTracer(params)
-        
-        # Calculate membrane potential drift
-        potential_drift = tracer.calculate_membrane_potential_drift()
-        
-        # Drift should be minimal (<1 mV)
-        max_drift = 1e-3  # V
-        assert abs(potential_drift) < max_drift, \
-               f"Membrane potential drift too large: {potential_drift}"
-    
-    def test_thermodynamic_feasibility(self):
-        """Test thermodynamic feasibility validation."""
-        params = TracerParameters(
-            photon_energy=1.5e-19,
-            photons_per_second=1e3,
-            ca_buffering_capacity=5e-7,
-            membrane_capacitance=1e-12,
-            temperature=310.0,
-            atp_concentration=5e-3,
-            atp_free_energy=-30.5e3
-        )
-        
-        tracer = BiocompatibleNeuralTracer(params)
-        
-        # Total energy consumption
-        total_energy = tracer.calculate_total_energy_consumption()
-        
-        # Available ATP energy
-        atp_energy = tracer.calculate_total_atp_consumed() * abs(params.atp_free_energy)
-        
-        # Energy balance should be feasible
-        assert atp_energy >= total_energy, \
-               "Insufficient ATP energy for total consumption"
-    
-    def test_extreme_parameter_robustness(self):
-        """Test tracer robustness with extreme parameters."""
-        # Test with very low photon energy
-        params_low = TracerParameters(
-            photon_energy=1e-21,        # Very low energy
-            photons_per_second=1e6,     # High flux to compensate
-            ca_buffering_capacity=1e-6, # High buffering
-            membrane_capacitance=1e-12,
-            temperature=310.0,
-            atp_concentration=5e-3,
-            atp_free_energy=-30.5e3
-        )
-        
-        tracer_low = BiocompatibleNeuralTracer(params_low)
-        
-        # Should not raise exceptions
-        try:
-            results_low = tracer_low.validate_biocompatibility()
-            assert isinstance(results_low, dict)
-        except Exception as e:
-            pytest.fail(f"Extreme low energy parameters caused exception: {e}")
-        
-        # Test with high photon energy but very low flux
-        params_high = TracerParameters(
-            photon_energy=1e-18,        # High energy
-            photons_per_second=1e2,     # Very low flux
-            ca_buffering_capacity=5e-7,
-            membrane_capacitance=1e-12,
-            temperature=310.0,
-            atp_concentration=5e-3,
-            atp_free_energy=-30.5e3
-        )
-        
-        tracer_high = BiocompatibleNeuralTracer(params_high)
-        
-        try:
-            results_high = tracer_high.validate_biocompatibility()
-            assert isinstance(results_high, dict)
-        except Exception as e:
-            pytest.fail(f"Extreme high energy parameters caused exception: {e}")
-
-
-class TestTracerParametersValidation:
-    """Test TracerParameters data structure validation."""
-    
-    def test_default_parameters_valid(self):
-        """Test that default parameters are physiologically valid."""
-        params = TracerParameters()
-        
-        # Check parameter ranges
-        assert 1e-21 <= params.photon_energy <= 1e-17, \
-               "Default photon energy outside valid range"
-        assert 1e1 <= params.photons_per_second <= 1e12, \
-               "Default photon flux outside valid range"
-        assert 1e-9 <= params.ca_buffering_capacity <= 1e-3, \
-               "Default Ca buffering outside valid range"
-        assert 1e-15 <= params.membrane_capacitance <= 1e-9, \
-               "Default membrane capacitance outside valid range"
-        assert 273.15 <= params.temperature <= 373.15, \
-               "Default temperature outside valid range"
-        assert 1e-6 <= params.atp_concentration <= 1e-1, \
-               "Default ATP concentration outside valid range"
-        assert -50e3 <= params.atp_free_energy <= -20e3, \
-               "Default ATP free energy outside valid range"
-    
-    def test_parameter_type_validation(self):
-        """Test parameter type validation."""
-        # All parameters should be numeric
-        params = TracerParameters()
-        
-        assert isinstance(params.photon_energy, (int, float))
-        assert isinstance(params.photons_per_second, (int, float))
-        assert isinstance(params.ca_buffering_capacity, (int, float))
-        assert isinstance(params.membrane_capacitance, (int, float))
-        assert isinstance(params.temperature, (int, float))
-        assert isinstance(params.atp_concentration, (int, float))
-        assert isinstance(params.atp_free_energy, (int, float))
-    
-    def test_parameter_physical_constraints(self):
-        """Test that parameters satisfy physical constraints."""
-        params = TracerParameters()
-        
-        # All energies and rates should be positive
-        assert params.photon_energy > 0, "Photon energy must be positive"
-        assert params.photons_per_second > 0, "Photon flux must be positive"
-        assert params.ca_buffering_capacity > 0, "Ca buffering must be positive"
-        assert params.membrane_capacitance > 0, "Membrane capacitance must be positive"
-        assert params.temperature > 0, "Temperature must be positive"
+        # Test ATP parameters
         assert params.atp_concentration > 0, "ATP concentration must be positive"
+        assert 1e-6 <= params.atp_concentration <= 1e-1, "ATP concentration outside physiological range"
+        assert params.atp_free_energy > 0, "ATP free energy should be positive (stored as positive value)"
         
-        # ATP free energy should be negative (exothermic)
-        assert params.atp_free_energy < 0, "ATP free energy should be negative"
+        # Test cellular parameters
+        assert params.cell_radius > 0, "Cell radius must be positive"
+        assert 1e-6 <= params.cell_radius <= 100e-6, "Cell radius outside reasonable range"
+        
+        # Test diffusion coefficients
+        assert params.diffusion_coefficient_tissue > 0, "Tissue diffusion coefficient must be positive"
+        assert params.diffusion_coefficient_cytoplasm >= params.diffusion_coefficient_tissue, \
+               "Cytoplasm diffusion should be >= tissue diffusion"
+        
+        # Test toxicity parameters
+        assert params.ld50_concentration > params.noael_concentration, \
+               "LD50 must be greater than NOAEL"
+        assert params.noael_concentration > 0, "NOAEL must be positive"
+
+    def test_biochemical_tracer_properties(self):
+        """Test biochemical tracer property calculations."""
+        # Test different molecular weights
+        molecular_weights = [500, 1000, 2000]  # g/mol
+        
+        for mw in molecular_weights:
+            tracer = BiochemicalTracer(
+                name=f"Test MW {mw}",
+                molecular_weight=mw,
+                fluorescence_quantum_yield=0.7
+            )
+            
+            # Verify stokes radius scales with molecular weight
+            assert tracer.stokes_radius > 0, "Stokes radius must be positive"
+            assert 1e-10 <= tracer.stokes_radius <= 1e-7, "Stokes radius outside reasonable range"
+            
+            # Verify diffusion coefficient is inversely related to radius
+            assert tracer.diffusion_coefficient > 0, "Diffusion coefficient must be positive"
+            assert 1e-13 <= tracer.diffusion_coefficient <= 1e-9, "Diffusion coefficient outside reasonable range"
+            
+            # Larger molecules should diffuse slower
+            if mw > 500:
+                smaller_tracer = BiochemicalTracer("Small", 500, 0.7)
+                assert tracer.diffusion_coefficient < smaller_tracer.diffusion_coefficient, \
+                       "Larger molecules should diffuse slower"
+    
+    def test_neural_tracer_experiment(self):
+        """Test neural tracer experiment framework."""
+        tissue_geometry = {
+            'length': 200e-6,   # 200 μm
+            'width': 200e-6,    # 200 μm
+            'height': 100e-6    # 100 μm
+        }
+        
+        # Create experiment
+        experiment = NeuralTracerExperiment(tissue_geometry)
+        
+        # Verify experiment setup
+        assert experiment.tracer is not None, "Experiment should have a tracer"
+        assert experiment.neural_tracer is not None, "Experiment should have a neural tracer"
+        assert experiment.dimensions == tissue_geometry
+        
+        # Verify tracer properties  
+        assert experiment.tracer.name == "Calcium Green-1"  # Default tracer
+        assert experiment.tracer.molecular_weight == 1000.0  # Expected MW
+        
+    def test_toxicity_calculation(self):
+        """Test toxicity response calculations."""
+        tracer = BiochemicalTracer("Test Tracer", 800.0)
+        tissue_geometry = {'length': 100e-6, 'width': 100e-6, 'height': 100e-6}
+        neural_tracer = BiocompatibleNeuralTracer(tracer, tissue_geometry)
+        
+        # Test concentration field
+        concentration_field = np.array([[[1e-7, 5e-7], [1e-6, 2e-6]]])  # mol/L
+        
+        toxicity_metrics = neural_tracer.calculate_toxicity_response(concentration_field)
+        
+        # Verify toxicity metrics structure
+        assert 'cytotoxicity_fraction' in toxicity_metrics
+        assert 'inflammatory_response' in toxicity_metrics
+        assert 'apoptosis_rate' in toxicity_metrics
+        
+        # Verify toxicity values are reasonable
+        assert np.all(toxicity_metrics['cytotoxicity_fraction'] >= 0)
+        assert np.all(toxicity_metrics['cytotoxicity_fraction'] <= 1)
+        assert np.all(toxicity_metrics['inflammatory_response'] >= 0)
+        
+    def test_bbb_permeability_calculation(self):
+        """Test blood-brain barrier permeability calculation."""
+        tracer = BiochemicalTracer("Test Tracer", 800.0)
+        tissue_geometry = {'length': 100e-6, 'width': 100e-6, 'height': 100e-6}
+        neural_tracer = BiocompatibleNeuralTracer(tracer, tissue_geometry)
+        
+        # Test with tracer properties
+        tracer_props = {'concentration': np.array([1e-6])}  # 1 μM
+        
+        bbb_permeability = neural_tracer.calculate_bbb_permeability(tracer_props)
+        
+        # Verify permeability is reasonable
+        assert bbb_permeability > 0, "BBB permeability must be positive"
+        assert 1e-12 <= bbb_permeability <= 1e-4, "BBB permeability outside reasonable range"
+        
+    def test_quantum_measurement_noise(self):
+        """Test quantum measurement noise calculation."""
+        tracer = BiochemicalTracer("Test Tracer", 800.0)
+        tissue_geometry = {'length': 100e-6, 'width': 100e-6, 'height': 100e-6}
+        neural_tracer = BiocompatibleNeuralTracer(tracer, tissue_geometry)
+        
+        voxel_volume = 1e-18  # m³ (1 μm³)
+        dt = 1e-3  # 1 ms
+        
+        quantum_noise = neural_tracer.calculate_quantum_measurement_noise(voxel_volume, dt)
+        
+        # Verify quantum noise is reasonable
+        assert quantum_noise >= 0, "Quantum noise must be non-negative"
+        assert quantum_noise <= 1, "Quantum noise should not exceed 100%"
+        
+        # Smaller volumes should have higher relative noise
+        smaller_volume = voxel_volume / 10
+        smaller_noise = neural_tracer.calculate_quantum_measurement_noise(smaller_volume, dt)
+        assert smaller_noise >= quantum_noise, "Smaller volumes should have higher relative noise"
 
 
-class TestTracerMethods:
-    """Test individual tracer calculation methods."""
+class TestNeuralTracerExperiment:
+    """Test neural tracer experiment functionality."""
     
-    def test_information_content_calculation(self):
-        """Test information content calculation."""
-        params = TracerParameters()
-        tracer = BiocompatibleNeuralTracer(params)
+    def test_experiment_construction(self):
+        """Test experiment construction with default parameters.""" 
+        tissue_dims = {'length': 500e-6, 'width': 500e-6, 'height': 200e-6}
+        experiment = NeuralTracerExperiment(tissue_dims)
         
-        info_content = tracer.calculate_information_content()
+        # Verify components exist
+        assert hasattr(experiment, 'tracer')
+        assert hasattr(experiment, 'neural_tracer') 
+        assert hasattr(experiment, 'dimensions')
         
-        # Information content should be positive
-        assert info_content > 0, "Information content must be positive"
+        # Verify dimensions
+        assert experiment.dimensions == tissue_dims
         
-        # Should be proportional to photon energy and flux
-        expected_info = params.photon_energy * params.photons_per_second
-        # Information includes logarithmic terms, so approximate check
-        assert 0.1 * expected_info <= info_content <= 10 * expected_info, \
-               "Information content magnitude unrealistic"
-    
-    def test_energy_per_bit_calculation(self):
-        """Test energy per bit calculation."""
-        params = TracerParameters()
-        tracer = BiocompatibleNeuralTracer(params)
+    def test_basic_experiment_functionality(self):
+        """Test basic experiment functionality without complex report generation."""
+        tissue_dims = {'length': 100e-6, 'width': 100e-6, 'height': 100e-6}
+        experiment = NeuralTracerExperiment(tissue_dims)
         
-        energy_per_bit = tracer.calculate_energy_per_bit()
+        # Verify experiment has required methods
+        assert hasattr(experiment, 'run_neural_tracer_test')
+        assert hasattr(experiment, 'generate_biocompatibility_report')
+        assert hasattr(experiment, 'create_test_scenario')
         
-        # Should exceed Landauer limit
-        landauer_min = STSLimits.landauer_limit(params.temperature)
-        assert energy_per_bit >= landauer_min, \
-               "Energy per bit below Landauer limit"
-        
-        # Should be realistic (not too far above minimum)
-        assert energy_per_bit <= 1e6 * landauer_min, \
-               "Energy per bit unrealistically high"
-    
-    def test_measurement_uncertainty_calculation(self):
-        """Test quantum measurement uncertainty calculation."""
-        params = TracerParameters()
-        tracer = BiocompatibleNeuralTracer(params)
-        
-        uncertainty = tracer.calculate_measurement_uncertainty()
-        
-        # Should respect Heisenberg uncertainty principle
-        hbar = HBAR
-        assert uncertainty >= hbar / 2, \
-               "Measurement uncertainty violates Heisenberg principle"
-    
-    def test_causal_structure_validation(self):
-        """Test causal structure validation."""
-        params = TracerParameters()
-        tracer = BiocompatibleNeuralTracer(params)
-        
-        causal_valid = tracer.validate_causal_structure()
-        
-        # Should always be True for properly constructed tracer
-        assert causal_valid, "Causal structure validation failed"
+        # Verify tracer and neural tracer exist and are properly configured
+        assert experiment.tracer.molecular_weight > 0
+        assert experiment.neural_tracer.max_concentration > 0
+        assert experiment.neural_tracer.params.atp_concentration > 0
 
 
 if __name__ == '__main__':

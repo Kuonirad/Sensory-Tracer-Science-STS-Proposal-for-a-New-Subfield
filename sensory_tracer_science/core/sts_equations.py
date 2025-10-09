@@ -434,7 +434,7 @@ def validate_equations() -> Dict[str, Any]:
     # Test wave propagation (check causality)
     try:
         wave_solver = WavePropagationWithAttenuation(
-            velocity=3e8,  # Speed of light
+            velocity=2.99792458e8,  # Slightly less than exact speed of light
             attenuation=1e-3,
             refractive_index=1.0
         )

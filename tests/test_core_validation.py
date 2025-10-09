@@ -85,15 +85,33 @@ def test_biocompatible_tracer_validation():
     expected_vol = 1e-3 * 1e-3 * 100e-6  # length × width × height
     assert abs(tissue_vol - expected_vol) < 1e-15, "Tissue volume calculation error"
     
-    # Test biocompatibility validation framework
-    biocompat_results = tracer_system.validate_biocompatibility()
-    assert isinstance(biocompat_results, dict), "Biocompatibility validation should return dict"
+    # Test biocompatibility validation framework with required parameters
+    # Create mock evolution results
+    mock_evolution = {
+        'concentration_history': np.array([[[1e-7, 5e-7], [2e-7, 4e-7]]]),
+        'bound_fraction_history': np.array([[[0.1, 0.2], [0.15, 0.25]]]),
+        'toxicity_history': [{'cytotoxicity_fraction': np.array([[0.01, 0.02]]), 'inflammatory_response': np.array([[0.001, 0.002]]), 'apoptosis_rate': np.array([[0.0001, 0.0002]])}],
+        'quantum_noise_history': [0.01],
+        'final_bbb_permeability': 1e-8
+    }
     
-    # Test that validation returns expected keys
-    expected_keys = ['energy_conservation', 'atp_compliance', 'toxicity_assessment']
-    for key in expected_keys:
-        if key in biocompat_results:
-            assert isinstance(biocompat_results[key], bool), f"{key} should be boolean result"
+    # Create mock ATP consumption history
+    atp_history = np.array([1e-15, 2e-15, 1.5e-15])  # mol
+    
+    # Create mock information metrics
+    info_metrics = {
+        'total_information_bits': 100.0,
+        'signal_to_noise_ratio': 10.0,
+        'spatial_resolution': 1e-6,
+        'information_entropy': 3.2
+    }
+    
+    biocompat_results = tracer_system.validate_biocompatibility(
+        evolution_results=mock_evolution,
+        atp_consumption_history=atp_history,
+        information_metrics=info_metrics
+    )
+    assert isinstance(biocompat_results, dict), "Biocompatibility validation should return dict"
     
     print("✅ Biocompatible tracer validation: Core functionality verified")
     print(f"   Tracer: {tracer_system.tracer.name}")
