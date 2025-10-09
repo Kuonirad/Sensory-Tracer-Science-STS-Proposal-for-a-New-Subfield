@@ -303,11 +303,11 @@ async def api_batch_analyze(
             "results": results,
             "summary": batch_summary,
             "chart": batch_chart,
-        logging.exception("Unhandled exception in batch analyze API endpoint")
             "total_processed": len(targets_list)
         }
         
     except Exception as e:
+        logging.exception("Unhandled exception in batch analyze API endpoint")
         return {
             "success": False,
             "error": "An internal error occurred during batch analysis"

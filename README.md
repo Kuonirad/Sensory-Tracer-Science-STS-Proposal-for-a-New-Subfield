@@ -252,21 +252,18 @@ sensory_tracer_science/
 
 ### **📖 Main Help**
 
-- [Theory Guide](sensory_tracer_science/docs/THEORY.md) - STS theory  
-- [How-to Guide](sensory_tracer_science/docs/GUIDE.md) - Tech info  
-- [Test Report](sensory_tracer_science/docs/REPORT.md) - Test results  
+- [Theory Guide](sensory_tracer_science/docs/STS_THEORETICAL_FRAMEWORK.md) - STS theory  
+- [Implementation Guide](sensory_tracer_science/docs/IMPLEMENTATION_GUIDE.md) - Tech info  
+- [Validation Report](sensory_tracer_science/docs/FINAL_VALIDATION_REPORT.md) - Test results  
 
 ### **🎯 Quick Help**
 
-- [Safe Tracer Guide](sensory_tracer_science/tracers/README.md) - Neural tracer use  
-- [Test Tutorial](sensory_tracer_science/validation/README.md) - Testing help  
+- [Package Documentation](sensory_tracer_science/README.md) - Package overview  
 - [Examples](examples/README.md) - How-to examples  
 
 ### **🔧 Developer Help**
 
-- [API Guide](docs/api/README.md) - API help  
-- [Contributing](CONTRIBUTING.md) - How to help  
-- [Testing Help](docs/testing/README.md) - Test guide
+- [Contributing](CONTRIBUTING.md) - How to help
 
 ## 📋 **API Reference**
 

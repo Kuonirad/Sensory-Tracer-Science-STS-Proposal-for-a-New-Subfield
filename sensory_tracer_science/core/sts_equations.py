@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, Optional, Tuple
 
 import numpy as np
 
-from .sts_constants import HBAR, K_B, STSLimits, STSPhysics
+from .sts_constants import K_B, STSLimits, STSPhysics
 
 
 @dataclass
@@ -516,7 +516,7 @@ def validate_equations() -> Dict[str, Any]:
 
     # Test wave propagation (check causality)
     try:
-        wave_solver = WavePropagationWithAttenuation(
+        _ = WavePropagationWithAttenuation(
             velocity=2.99792458e8,  # Slightly less than exact speed of light
             attenuation=1e-3,
             refractive_index=1.0,
@@ -527,7 +527,7 @@ def validate_equations() -> Dict[str, Any]:
 
     # Test faster-than-light rejection
     try:
-        invalid_solver = WavePropagationWithAttenuation(
+        _ = WavePropagationWithAttenuation(
             velocity=4e8, attenuation=1e-3, refractive_index=1.0  # Faster than light
         )
         results["ftl_rejection"] = "FAILED - should have rejected FTL velocity"
