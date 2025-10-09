@@ -1,0 +1,85 @@
+name: 'README Quality Check'
+description: 'Comprehensive README quality assessment for repositories'
+author: 'README Quality Platform'
+
+branding:
+  icon: 'file-text'
+  color: 'blue'
+
+inputs:
+  readme-path:
+    description: 'Path to README file'
+    required: false
+    default: 'README.md'
+  
+  repository-path:
+    description: 'Path to repository root for code consistency analysis'
+    required: false
+    default: '.'
+  
+  fail-threshold:
+    description: 'Minimum quality score (0-100) to pass the check'
+    required: false
+    default: '60'
+  
+  output-format:
+    description: 'Output format: json, markdown, summary'
+    required: false
+    default: 'markdown'
+  
+  custom-weights:
+    description: 'Custom scoring weights as JSON: {"readability": 0.25, "structural": 0.3, "complexity": 0.2, "consistency": 0.25}'
+    required: false
+  
+  github-token:
+    description: 'GitHub token for repository analysis (uses GITHUB_TOKEN by default)'
+    required: false
+    default: ${{ github.token }}
+  
+  include-code-analysis:
+    description: 'Include code consistency analysis'
+    required: false
+    default: 'true'
+  
+  comment-on-pr:
+    description: 'Post analysis results as PR comment'
+    required: false
+    default: 'false'
+
+outputs:
+  quality-score:
+    description: 'Overall quality score (0-100)'
+  
+  grade:
+    description: 'Letter grade (A+ to F)'
+  
+  passed:
+    description: 'Whether the quality check passed the threshold'
+  
+  readability-score:
+    description: 'Readability dimension score'
+  
+  structural-score:
+    description: 'Structural dimension score'
+  
+  complexity-score:
+    description: 'Complexity dimension score'
+  
+  consistency-score:
+    description: 'Consistency dimension score'
+  
+  report-file:
+    description: 'Path to detailed analysis report file'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.readme-path }}
+    - ${{ inputs.repository-path }}
+    - ${{ inputs.fail-threshold }}
+    - ${{ inputs.output-format }}
+    - ${{ inputs.custom-weights }}
+    - ${{ inputs.github-token }}
+    - ${{ inputs.include-code-analysis }}
+    - ${{ inputs.comment-on-pr }}
