@@ -25,8 +25,8 @@ N_A = 6.02214076e23          # Avogadro constant (mol⁻¹) - mol ↔ particle c
 # ============================================================================
 
 # Derived Fundamental Constants
-R_GAS = 8.314462618         # Universal gas constant (J mol⁻¹ K⁻¹) = K_B × N_A
-F_FARADAY = 96485.33212      # Faraday constant (C mol⁻¹) - Nernst equation
+R_GAS = 8.31446261815324    # Universal gas constant (J mol⁻¹ K⁻¹) = K_B × N_A (exact)
+F_FARADAY = E_CHARGE * N_A   # Faraday constant (C mol⁻¹) - Nernst equation (derived)
 EPSILON_0 = 8.8541878128e-12 # Vacuum permittivity (F m⁻¹) - Coulomb, Debye length
 
 # ============================================================================

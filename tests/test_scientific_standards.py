@@ -261,5 +261,5 @@ class TestFrameworkIntegration:
         
         # Check individual audit results
         assert results['energy_audit'].passed, "Energy audit should pass"
-        assert results['information_audit'].passed, "Information audit should pass"  
-        assert results['causality_audit'].passed, "Causality audit should pass"
+        assert results['information_balance'].passed, "Information balance should pass"  
+        assert results['causality_check'].passed, "Causality check should pass"
