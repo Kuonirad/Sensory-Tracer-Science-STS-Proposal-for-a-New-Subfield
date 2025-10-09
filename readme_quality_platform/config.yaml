@@ -1,0 +1,26 @@
+# README Quality Platform Configuration
+
+analysis:
+  scoring_weights:
+    readability: 0.25
+    structural: 0.30
+    complexity: 0.20
+    consistency: 0.25
+  
+  quality_thresholds:
+    excellent: 90
+    good: 75
+    fair: 60
+    poor: 45
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  debug: false
+  github_token: "${GITHUB_TOKEN}"
+
+database:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  storage_type: "file"
+  storage_path: "./results"

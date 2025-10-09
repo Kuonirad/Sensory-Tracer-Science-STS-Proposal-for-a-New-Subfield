@@ -1,0 +1,109 @@
+name: README Quality Check
+
+on:
+  pull_request:
+    paths:
+      - 'README.md'
+      - 'readme.md'
+      - 'README.rst'
+      - 'docs/README.md'
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'README.md'
+      - 'readme.md'
+      - 'README.rst'
+      - 'docs/README.md'
+  workflow_dispatch:
+    inputs:
+      readme_path:
+        description: 'Path to README file'
+        required: false
+        default: 'README.md'
+      fail_threshold:
+        description: 'Minimum quality score (0-100)'
+        required: false
+        default: '60'
+
+jobs:
+  readme-quality-check:
+    name: Analyze README Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better code analysis
+      
+      - name: README Quality Analysis
+        id: readme_analysis
+        uses: ./readme_quality_platform/github_actions
+        with:
+          readme-path: ${{ github.event.inputs.readme_path || 'README.md' }}
+          repository-path: '.'
+          fail-threshold: ${{ github.event.inputs.fail_threshold || '60' }}
+          output-format: 'markdown'
+          include-code-analysis: 'true'
+          comment-on-pr: 'true'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Upload Analysis Report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: readme-quality-report
+          path: |
+            /tmp/analysis.json
+            /tmp/readme_quality_report.md
+          retention-days: 30
+      
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read the markdown report
+            const reportPath = '/tmp/readme_quality_report.md';
+            if (fs.existsSync(reportPath)) {
+              const report = fs.readFileSync(reportPath, 'utf8');
+              
+              // Post comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: report
+              });
+            }
+      
+      - name: Set Status Check
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const score = '${{ steps.readme_analysis.outputs.quality-score }}';
+            const grade = '${{ steps.readme_analysis.outputs.grade }}';
+            const passed = '${{ steps.readme_analysis.outputs.passed }}';
+            
+            const state = passed === 'true' ? 'success' : 'failure';
+            const description = `Quality Score: ${score}/100 (${grade})`;
+            
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: state,
+              description: description,
+              context: 'README Quality Check'
+            });
+      
+      - name: Quality Gate
+        if: steps.readme_analysis.outputs.passed == 'false'
+        run: |
+          echo "❌ README quality check failed!"
+          echo "Score: ${{ steps.readme_analysis.outputs.quality-score }}/100"
+          echo "Threshold: ${{ github.event.inputs.fail_threshold || '60' }}"
+          exit 1
