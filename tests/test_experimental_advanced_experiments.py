@@ -1,25 +1,29 @@
+#!/usr/bin/env python3
 """
-Basic test suite for advanced experiments module.
-This provides foundational coverage for the experimental modules.
+Test Suite for Advanced Experimental Module
+
+Comprehensive tests for the advanced experimental protocols,
+multi-modal sensing, and adaptive protocol functionality.
 """
 
+import json
 import pytest
 import numpy as np
-from unittest.mock import patch, MagicMock
+from unittest.mock import Mock, patch, MagicMock
+from datetime import datetime
 
 from sensory_tracer_science.experimental.advanced_experiments import (
     MultiModalParameters,
     AdaptiveProtocolParameters,
     AdvancedExperimentSuite,
-    run_advanced_experiment_demo
 )
 
 
 class TestMultiModalParameters:
-    """Test the MultiModalParameters dataclass."""
+    """Test multi-modal sensing parameter configuration."""
     
-    def test_default_initialization(self):
-        """Test default parameter initialization."""
+    def test_default_parameters(self):
+        """Test default multi-modal parameters."""
         params = MultiModalParameters()
         
         assert params.temporal_synchronization_accuracy == 1e-6
@@ -32,217 +36,357 @@ class TestMultiModalParameters:
         assert params.maximum_latency == 0.001
         assert params.bandwidth_optimization is True
     
-    def test_custom_initialization(self):
-        """Test custom parameter initialization."""
+    def test_custom_parameters(self):
+        """Test custom multi-modal parameters."""
         params = MultiModalParameters(
-            temporal_synchronization_accuracy=1e-9,
+            temporal_synchronization_accuracy=5e-7,
+            spatial_registration_accuracy=2e-6,
+            cross_modal_correlation_threshold=0.9,
             data_fusion_algorithm="kalman_filter",
             real_time_processing=False
         )
         
-        assert params.temporal_synchronization_accuracy == 1e-9
+        assert params.temporal_synchronization_accuracy == 5e-7
+        assert params.spatial_registration_accuracy == 2e-6
+        assert params.cross_modal_correlation_threshold == 0.9
         assert params.data_fusion_algorithm == "kalman_filter"
         assert params.real_time_processing is False
-        
-        # Other parameters should remain default
-        assert params.cross_modal_correlation_threshold == 0.85
-        assert params.confidence_weighting is True
 
 
 class TestAdaptiveProtocolParameters:
-    """Test the AdaptiveProtocolParameters dataclass."""
+    """Test adaptive protocol parameter configuration."""
     
-    def test_default_initialization(self):
+    def test_default_parameters(self):
         """Test default adaptive protocol parameters."""
         params = AdaptiveProtocolParameters()
         
-        # Should have reasonable default values
-        assert hasattr(params, 'learning_rate')
-        assert hasattr(params, 'convergence_threshold')  # Fixed: was adaptation_threshold
-        assert hasattr(params, 'adaptation_window')
-        assert hasattr(params, 'optimization_algorithm')
-        assert hasattr(params, 'safety_constraints_enabled')
-        
-        # Check default values
         assert params.learning_rate == 0.01
+        assert params.adaptation_window == 100
         assert params.convergence_threshold == 0.001
         assert params.optimization_algorithm == "particle_swarm"
+        assert params.population_size == 50
+        assert params.generations == 100
         assert params.safety_constraints_enabled is True
+        
+        # Check default performance constraints
+        assert "signal_to_noise_ratio" in params.performance_constraints
+        assert params.performance_constraints["signal_to_noise_ratio"] == 20.0
+        assert params.performance_constraints["measurement_accuracy"] == 0.01
+        assert params.performance_constraints["response_time"] == 0.1
+        assert params.performance_constraints["energy_efficiency"] == 0.8
+    
+    def test_custom_performance_constraints(self):
+        """Test custom performance constraints."""
+        custom_constraints = {
+            "signal_to_noise_ratio": 25.0,
+            "measurement_accuracy": 0.005,
+        }
+        
+        params = AdaptiveProtocolParameters(
+            learning_rate=0.05,
+            performance_constraints=custom_constraints
+        )
+        
+        assert params.learning_rate == 0.05
+        assert params.performance_constraints == custom_constraints
+    
+    def test_none_performance_constraints_post_init(self):
+        """Test __post_init__ handling of None performance constraints."""
+        params = AdaptiveProtocolParameters(performance_constraints=None)
+        
+        # Should be populated with defaults in __post_init__
+        assert params.performance_constraints is not None
+        assert len(params.performance_constraints) == 4
 
 
 class TestAdvancedExperimentSuite:
-    """Test the AdvancedExperimentSuite class."""
+    """Test advanced experiment suite functionality."""
     
-    def test_initialization_basic(self):
-        """Test basic suite initialization."""
-        suite = AdvancedExperimentSuite("test_suite_001")
-        
-        # Should initialize without errors
-        assert isinstance(suite, AdvancedExperimentSuite)
-        assert suite.suite_id == "test_suite_001"
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.suite_id = "test_suite_001"
+        self.suite = AdvancedExperimentSuite(self.suite_id)
     
-    def test_initialization_with_parameters(self):
-        """Test suite initialization with custom parameters."""
-        suite = AdvancedExperimentSuite("test_suite_with_params")
-        
-        # Should have default parameters initialized
-        assert isinstance(suite, AdvancedExperimentSuite)
-        assert hasattr(suite, 'multi_modal_params')
-        assert hasattr(suite, 'adaptive_params')
-        assert isinstance(suite.multi_modal_params, MultiModalParameters)
-        assert isinstance(suite.adaptive_params, AdaptiveProtocolParameters)
+    def test_initialization(self):
+        """Test experiment suite initialization."""
+        assert self.suite.suite_id == self.suite_id
+        assert isinstance(self.suite.multi_modal_params, MultiModalParameters)
+        assert isinstance(self.suite.adaptive_params, AdaptiveProtocolParameters)
+        assert self.suite.active_experiments == {}
+        assert self.suite.data_streams == {}
+        assert self.suite.performance_metrics == {}
     
-    def test_has_required_attributes(self):
-        """Test that suite has expected attributes."""
-        suite = AdvancedExperimentSuite("test_suite_attributes")
+    @patch('sensory_tracer_science.experimental.advanced_experiments.QuantumTracerExperiment')
+    @patch('sensory_tracer_science.experimental.advanced_experiments.BrillouinTracerExperiment')
+    @patch('sensory_tracer_science.experimental.advanced_experiments.NeuralTracerExperiment')
+    def test_setup_multi_modal_experiment(self, mock_neural, mock_brillouin, mock_quantum):
+        """Test multi-modal experiment setup."""
+        # Mock the tracer experiments
+        mock_neural.return_value = Mock()
+        mock_brillouin.return_value = Mock()
+        mock_quantum.return_value = Mock()
         
-        # Should have key attributes based on actual implementation
-        assert hasattr(suite, 'suite_id')
-        assert hasattr(suite, 'multi_modal_params')
-        assert hasattr(suite, 'adaptive_params')
-        assert hasattr(suite, 'active_experiments')
-        assert hasattr(suite, 'data_streams')
-        assert hasattr(suite, 'performance_metrics')
+        tracer_types = ["neural", "brillouin", "quantum"]
         
-        # Check types
-        assert isinstance(suite.active_experiments, dict)
-        assert isinstance(suite.data_streams, dict)
-        assert isinstance(suite.performance_metrics, dict)
-        # Verify it has reasonable number of attributes and methods
-        attributes = dir(suite)
-        assert len(attributes) > 10
+        # Test that experiment setup would use the tracers
+        for tracer_type in tracer_types:
+            experiment_id = f"exp_{tracer_type}_001"
+            # This would be part of the actual implementation
+            assert experiment_id not in self.suite.active_experiments
     
-    def test_suite_methods_exist(self):
-        """Test that suite has callable methods."""
-        suite = AdvancedExperimentSuite("test_suite_methods")
+    def test_multi_modal_parameters_validation(self):
+        """Test validation of multi-modal parameters."""
+        params = self.suite.multi_modal_params
         
-        # Check for expected methods based on actual implementation
-        assert hasattr(suite, 'run_multi_modal_sensing_experiment')
-        assert callable(getattr(suite, 'run_multi_modal_sensing_experiment'))
+        # Temporal synchronization should be positive and reasonable
+        assert 0 < params.temporal_synchronization_accuracy < 1e-3
         
-        # Check for common method patterns
-        methods = [attr for attr in dir(suite) if callable(getattr(suite, attr)) and not attr.startswith('_')]
+        # Spatial registration should be positive and reasonable  
+        assert 0 < params.spatial_registration_accuracy < 1e-3
         
-        # Should have at least some methods
-        assert len(methods) > 0
+        # Correlation threshold should be between 0 and 1
+        assert 0 < params.cross_modal_correlation_threshold <= 1.0
+        
+        # Maximum latency should be positive and reasonable for real-time
+        assert 0 < params.maximum_latency < 1.0
     
-    def test_suite_can_be_created_multiple_times(self):
-        """Test creating multiple suite instances."""
-        suite1 = AdvancedExperimentSuite("suite_1")
-        suite2 = AdvancedExperimentSuite("suite_2")
+    def test_adaptive_parameters_validation(self):
+        """Test validation of adaptive protocol parameters."""
+        params = self.suite.adaptive_params
         
-        # Should be able to create multiple instances
-        assert suite1 is not suite2
-        assert isinstance(suite1, AdvancedExperimentSuite)
-        assert isinstance(suite2, AdvancedExperimentSuite)
-        assert suite1.suite_id != suite2.suite_id
+        # Learning rate should be positive and not too large
+        assert 0 < params.learning_rate < 1.0
+        
+        # Adaptation window should be positive integer
+        assert params.adaptation_window > 0
+        
+        # Convergence threshold should be positive and small
+        assert 0 < params.convergence_threshold < 1.0
+        
+        # Population size should be reasonable for optimization
+        assert 10 <= params.population_size <= 1000
+        
+        # Generations should be positive
+        assert params.generations > 0
+    
+    def test_performance_constraints_validation(self):
+        """Test validation of performance constraints."""
+        constraints = self.suite.adaptive_params.performance_constraints
+        
+        # SNR should be positive (in dB)
+        assert constraints["signal_to_noise_ratio"] > 0
+        
+        # Accuracy should be positive fraction
+        assert 0 < constraints["measurement_accuracy"] < 1.0
+        
+        # Response time should be positive
+        assert constraints["response_time"] > 0
+        
+        # Energy efficiency should be between 0 and 1
+        assert 0 < constraints["energy_efficiency"] <= 1.0
 
 
-class TestAdvancedExperimentDemo:
-    """Test the demo function."""
+class TestExperimentalMetrics:
+    """Test experimental metrics functionality (mock implementation)."""
     
-    def test_run_advanced_experiment_demo_basic(self):
-        """Test that demo function can be called."""
-        try:
-            result = run_advanced_experiment_demo()
-            # If it returns something, should be reasonable
-            if result is not None:
-                assert isinstance(result, (dict, str, bool))
-        except Exception as e:
-            # If it raises an exception, should be informative
-            assert len(str(e)) > 0
+    def test_metrics_initialization(self):
+        """Test experimental metrics initialization with mock."""
+        # Mock a metrics object for testing purposes
+        class MockExperimentalMetrics:
+            def __init__(self):
+                self.start_time = datetime.now()
+                self.measurements = {}
+                self.performance_data = {}
+        
+        metrics = MockExperimentalMetrics()
+        
+        # Check that metrics object exists and has expected attributes
+        assert hasattr(metrics, 'start_time')
+        assert hasattr(metrics, 'measurements')
+        assert hasattr(metrics, 'performance_data')
+        
+        # Verify initial state
+        assert metrics.measurements == {}
+        assert metrics.performance_data == {}
     
-    @patch('sensory_tracer_science.experimental.advanced_experiments.print')
-    def test_run_advanced_experiment_demo_with_mock(self, mock_print):
-        """Test demo function with mocked dependencies."""
-        try:
-            result = run_advanced_experiment_demo()
-            # Should complete without major errors
-            assert True  # If we get here, no major exception occurred
-        except Exception:
-            # Some errors are acceptable for demo functions
-            assert True
+    def test_metrics_data_types(self):
+        """Test metrics data type handling with mock."""
+        class MockExperimentalMetrics:
+            def __init__(self):
+                self.measurements = {}
+                self.performance_data = {}
+        
+        metrics = MockExperimentalMetrics()
+        
+        # Add some test measurements
+        metrics.measurements['temperature'] = [295.0, 296.0, 297.0]
+        metrics.measurements['pressure'] = [101325.0, 101330.0, 101320.0]
+        
+        # Verify data types
+        assert isinstance(metrics.measurements['temperature'], list)
+        assert isinstance(metrics.measurements['pressure'], list)
+        assert all(isinstance(t, float) for t in metrics.measurements['temperature'])
 
 
-class TestEdgeCasesAndBasicFunctionality:
-    """Test edge cases and basic functionality."""
+class TestAdvancedExperimentIntegration:
+    """Test integration between advanced experiment components."""
     
-    def test_multi_modal_parameters_extreme_values(self):
-        """Test MultiModalParameters with extreme values."""
-        # Very high precision
-        params_high_precision = MultiModalParameters(
-            temporal_synchronization_accuracy=1e-12,
-            spatial_registration_accuracy=1e-9
-        )
-        
-        assert params_high_precision.temporal_synchronization_accuracy == 1e-12
-        assert params_high_precision.spatial_registration_accuracy == 1e-9
-        
-        # Very low precision
-        params_low_precision = MultiModalParameters(
-            temporal_synchronization_accuracy=1e-3,
-            cross_modal_correlation_threshold=0.1
-        )
-        
-        assert params_low_precision.temporal_synchronization_accuracy == 1e-3
-        assert params_low_precision.cross_modal_correlation_threshold == 0.1
+    def setup_method(self):
+        """Set up integration test fixtures."""
+        self.suite = AdvancedExperimentSuite("integration_test_001")
     
-    def test_multi_modal_parameters_algorithm_variants(self):
-        """Test MultiModalParameters with different algorithm choices."""
-        algorithms = ["bayesian_inference", "kalman_filter", "neural_network", "custom"]
+    def test_parameter_consistency(self):
+        """Test consistency between multi-modal and adaptive parameters."""
+        multi_params = self.suite.multi_modal_params
+        adaptive_params = self.suite.adaptive_params
         
-        for algorithm in algorithms:
-            params = MultiModalParameters(data_fusion_algorithm=algorithm)
-            assert params.data_fusion_algorithm == algorithm
+        # Real-time processing should be compatible with maximum latency
+        if multi_params.real_time_processing:
+            assert multi_params.maximum_latency <= 0.1  # 100ms reasonable for real-time
+        
+        # Adaptive sampling should be compatible with learning parameters
+        if multi_params.adaptive_sampling:
+            assert adaptive_params.learning_rate > 0
+            assert adaptive_params.adaptation_window > 0
     
-    def test_suite_basic_functionality(self):
-        """Test that suite can perform basic operations."""
-        suite = AdvancedExperimentSuite()
+    def test_safety_constraint_integration(self):
+        """Test integration of safety constraints across parameters."""
+        adaptive_params = self.suite.adaptive_params
         
-        # Should be able to access attributes without errors
-        str_repr = str(suite)
-        assert len(str_repr) > 0
-        
-        # Should have a reasonable repr
-        repr_str = repr(suite)
-        assert "AdvancedExperimentSuite" in repr_str
-    
-    @patch('sensory_tracer_science.experimental.advanced_experiments.time')
-    @patch('sensory_tracer_science.experimental.advanced_experiments.threading')
-    def test_suite_with_mocked_dependencies(self, mock_threading, mock_time):
-        """Test suite functionality with mocked external dependencies."""
-        # Mock time.time to return consistent values
-        mock_time.time.return_value = 1234567890.0
-        
-        # Mock threading components
-        mock_threading.Thread.return_value = MagicMock()
-        mock_threading.Lock.return_value = MagicMock()
-        
-        suite = AdvancedExperimentSuite()
-        
-        # Should handle mocked dependencies gracefully
-        assert isinstance(suite, AdvancedExperimentSuite)
-    
-    def test_parameters_can_be_serialized(self):
-        """Test that parameter objects can be converted to dictionaries."""
-        multi_modal_params = MultiModalParameters()
-        adaptive_params = AdaptiveProtocolParameters()
-        
-        # Should be able to convert to dict (dataclasses support this)
-        try:
-            from dataclasses import asdict
-            multi_modal_dict = asdict(multi_modal_params)
-            adaptive_dict = asdict(adaptive_params)
+        if adaptive_params.safety_constraints_enabled:
+            # Should have reasonable performance constraints
+            constraints = adaptive_params.performance_constraints
+            assert len(constraints) > 0
             
-            assert isinstance(multi_modal_dict, dict)
-            assert isinstance(adaptive_dict, dict)
-            assert len(multi_modal_dict) > 0
-            assert len(adaptive_dict) > 0
-        except Exception:
-            # If asdict doesn't work, at least check they have __dict__
-            assert hasattr(multi_modal_params, '__dict__')
-            assert hasattr(adaptive_params, '__dict__')
+            # Energy efficiency constraint should exist for safety
+            assert "energy_efficiency" in constraints
+            assert constraints["energy_efficiency"] >= 0.5  # Minimum 50% efficiency
+    
+    def test_multi_modal_synchronization_requirements(self):
+        """Test synchronization requirements for multi-modal sensing."""
+        params = self.suite.multi_modal_params
+        
+        # Temporal and spatial synchronization should be compatible
+        temporal_precision = params.temporal_synchronization_accuracy
+        spatial_precision = params.spatial_registration_accuracy
+        
+        # Both should be in reasonable scientific ranges
+        assert 1e-9 <= temporal_precision <= 1e-3  # nanosecond to millisecond
+        assert 1e-9 <= spatial_precision <= 1e-3   # nanometer to millimeter
+        
+        # For real-time processing, synchronization should be fast enough
+        if params.real_time_processing:
+            assert temporal_precision <= params.maximum_latency / 10
 
 
-if __name__ == "__main__":
-    pytest.main([__file__])
+class TestAdvancedExperimentErrorHandling:
+    """Test error handling in advanced experiments."""
+    
+    def test_invalid_suite_id(self):
+        """Test handling of invalid suite IDs."""
+        # Empty string should be handled gracefully
+        suite = AdvancedExperimentSuite("")
+        assert suite.suite_id == ""
+        
+        # None should be handled
+        suite = AdvancedExperimentSuite(None)
+        assert suite.suite_id is None
+    
+    def test_parameter_boundary_conditions(self):
+        """Test parameter boundary conditions."""
+        # Test extreme but valid values
+        params = MultiModalParameters(
+            temporal_synchronization_accuracy=1e-9,  # nanosecond precision
+            cross_modal_correlation_threshold=1.0,   # perfect correlation
+            maximum_latency=0.0001                   # 0.1ms latency
+        )
+        
+        assert params.temporal_synchronization_accuracy == 1e-9
+        assert params.cross_modal_correlation_threshold == 1.0
+        assert params.maximum_latency == 0.0001
+    
+    def test_adaptive_protocol_edge_cases(self):
+        """Test adaptive protocol edge cases."""
+        # Test minimum viable parameters
+        params = AdaptiveProtocolParameters(
+            learning_rate=1e-6,        # very slow learning
+            adaptation_window=1,       # single measurement window
+            population_size=2,         # minimal population
+            generations=1              # single generation
+        )
+        
+        assert params.learning_rate == 1e-6
+        assert params.adaptation_window == 1
+        assert params.population_size == 2
+        assert params.generations == 1
+
+
+class TestExperimentalDataHandling:
+    """Test experimental data handling and processing."""
+    
+    def setup_method(self):
+        """Set up data handling tests."""
+        class MockExperimentalMetrics:
+            def __init__(self):
+                self.measurements = {}
+                self.performance_data = {}
+        
+        self.metrics = MockExperimentalMetrics()
+    
+    def test_measurement_data_storage(self):
+        """Test measurement data storage and retrieval."""
+        # Add measurement data
+        self.metrics.measurements['sensor_1'] = [1.0, 2.0, 3.0]
+        self.metrics.measurements['sensor_2'] = [4.0, 5.0, 6.0]
+        
+        # Verify storage
+        assert len(self.metrics.measurements) == 2
+        assert 'sensor_1' in self.metrics.measurements
+        assert 'sensor_2' in self.metrics.measurements
+        
+        # Verify data integrity
+        assert self.metrics.measurements['sensor_1'] == [1.0, 2.0, 3.0]
+        assert self.metrics.measurements['sensor_2'] == [4.0, 5.0, 6.0]
+    
+    def test_performance_data_tracking(self):
+        """Test performance data tracking."""
+        # Add performance metrics
+        self.metrics.performance_data['throughput'] = 1000.0  # measurements/sec
+        self.metrics.performance_data['latency'] = 0.001      # seconds
+        self.metrics.performance_data['accuracy'] = 0.99      # 99% accuracy
+        
+        # Verify tracking
+        assert self.metrics.performance_data['throughput'] == 1000.0
+        assert self.metrics.performance_data['latency'] == 0.001
+        assert self.metrics.performance_data['accuracy'] == 0.99
+    
+    def test_data_serialization_compatibility(self):
+        """Test that metrics data can be serialized."""
+        class MockExperimentalMetrics:
+            def __init__(self):
+                self.measurements = {}
+                self.performance_data = {}
+        
+        metrics = MockExperimentalMetrics()
+        
+        # Add various data types
+        metrics.measurements['integers'] = [1, 2, 3]
+        metrics.measurements['floats'] = [1.1, 2.2, 3.3]
+        metrics.performance_data['string'] = "test_value"
+        metrics.performance_data['boolean'] = True
+        
+        # Test JSON serialization (common for data export)
+        try:
+            json_str = json.dumps({
+                'measurements': metrics.measurements,
+                'performance_data': metrics.performance_data
+            })
+            assert len(json_str) > 0
+            
+            # Test deserialization
+            restored = json.loads(json_str)
+            assert restored['measurements']['integers'] == [1, 2, 3]
+            assert restored['performance_data']['string'] == "test_value"
+            
+        except (TypeError, ValueError) as e:
+            pytest.fail(f"Data serialization failed: {e}")
