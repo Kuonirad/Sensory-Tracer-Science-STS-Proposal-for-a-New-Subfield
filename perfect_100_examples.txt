@@ -1,0 +1,121 @@
+Perfect Flesch Reading Ease 100/100 Examples
+=============================================
+
+Example 1 - Basic Introduction (Your original example):
+Hi.
+I
+am
+Sam.
+I
+code.
+I
+like
+cats.
+
+Example 2 - Coding Theme:
+Code.
+Make.
+Build.
+Run.
+Test.
+Fix.
+Git.
+Push.
+Pull.
+Debug.
+
+Example 3 - Nature Theme:
+Tree.
+Leaf.
+Bird.
+Fish.
+Rock.
+Sun.
+Moon.
+Star.
+Sea.
+Lake.
+
+Example 4 - Action Words:
+Run.
+Jump.
+Walk.
+Sit.
+Stand.
+Look.
+See.
+Hear.
+Feel.
+Think.
+
+Example 5 - Colors:
+Red.
+Blue.
+Green.
+Black.
+White.
+Pink.
+Gold.
+Gray.
+Brown.
+Tan.
+
+Example 6 - Animals:
+Cat.
+Dog.
+Fox.
+Bear.
+Fish.
+Bird.
+Bee.
+Ant.
+Cow.
+Pig.
+
+Example 7 - Tech Simplified:
+App.
+Code.
+Data.
+File.
+Link.
+Node.
+Path.
+Port.
+Repo.
+Test.
+
+Example 8 - Conversation Style:
+Hi.
+Yes.
+No.
+Good.
+Bad.
+Fast.
+Slow.
+Big.
+Small.
+Nice.
+
+Example 9 - Numbers and Time:
+One.
+Two.
+Three.
+Four.
+Five.
+Day.
+Week.
+Month.
+Year.
+Time.
+
+Example 10 - Learning Theme:
+Learn.
+Read.
+Write.
+Know.
+Think.
+Ask.
+Tell.
+Show.
+Help.
+Teach.
