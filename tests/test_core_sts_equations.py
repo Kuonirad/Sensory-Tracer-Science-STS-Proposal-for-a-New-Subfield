@@ -376,17 +376,15 @@ class TestTracerEnergyContinuity:
         xx, yy, zz = np.meshgrid(x, y, z, indexing='ij')
         spatial_grid = np.stack([xx, yy, zz], axis=-1)
         
-        dt = 1e-6  # Larger time step to see changes
+        dt = 1e-9
         time = 0.0
         
         new_energy = energy_continuity.time_evolution(
             initial_energy, velocity_field, spatial_grid, time, dt
         )
         
-        # Energy should change due to both dissipation and source (use much larger change tolerance)
-        # The change might be very small, so check that evolution actually occurred
-        change_occurred = not np.allclose(new_energy, initial_energy, rtol=1e-12, atol=1e-25)
-        assert change_occurred, f"Energy should change. Initial: {initial_energy}, Final: {new_energy}"
+        # Energy should change due to both dissipation and source
+        assert not np.allclose(new_energy, initial_energy)
         assert np.all(new_energy >= 0.0)  # Energy should remain non-negative
     
     def test_time_evolution_energy_conservation(self):
@@ -422,7 +420,7 @@ class TestWavePropagationWithAttenuation:
     
     def test_initialization_valid_parameters(self):
         """Test initialization with valid wave parameters."""
-        velocity = 1.8e8  # 180,000 km/s (safely below c/n=1.5 limit)
+        velocity = 2.0e8  # 200,000 km/s (less than c)
         attenuation = 1e-3
         refractive_index = 1.5
         
@@ -453,9 +451,9 @@ class TestWavePropagationWithAttenuation:
     
     def test_initialization_medium_with_refractive_index(self):
         """Test initialization in medium with refractive index > 1."""
-        # In medium with n=2, max speed should be c/2, use 90% of limit
+        # In medium with n=2, max speed should be c/2
         wave_prop = WavePropagationWithAttenuation(
-            velocity=1.35e8,  # ~90% of c/2 to avoid edge case
+            velocity=1.5e8,  # c/2 
             attenuation=1e-3,
             refractive_index=2.0
         )
@@ -533,14 +531,14 @@ class TestWavePropagationWithAttenuation:
         spatial_grid = np.stack([xx, yy, zz], axis=-1)
         source_field = np.zeros_like(psi)
         
-        dt = 1e-9  # Larger time step to see evolution
+        dt = 1e-12  # Very small time step
         
         new_psi, new_psi_dot = wave_prop.time_evolution(
             psi, psi_dot, spatial_grid, source_field, dt
         )
         
-        # Wave should evolve (not remain static) - use looser tolerance
-        assert not np.allclose(new_psi, psi, rtol=1e-6)
+        # Wave should evolve (not remain static)
+        assert not np.allclose(new_psi, psi)
         assert not np.allclose(new_psi_dot, psi_dot)
     
     def test_time_evolution_with_source(self):
@@ -784,10 +782,7 @@ class TestSTSSystemSolver:
         states = solver.evolve_system(initial_state, spatial_grid, time_steps=1, dt=1e-10)
         
         assert len(states) == 2
-        # Check that the solver created new states (time might be handled differently)
-        assert states[0] is not states[1], "States should be different objects"
-        # The solver might reset time or handle it differently, just check evolution occurred
-        assert states[1].energy != states[0].energy or states[1].information_content != states[0].information_content
+        assert states[1].time == initial_state.time + 1e-10
 
 
 class TestValidationFunction:
@@ -807,7 +802,7 @@ class TestValidationFunction:
         assert results["causality_check"] == "PASSED"
         
         assert "ftl_rejection" in results
-        assert results["ftl_rejection"].startswith("PASSED")
+        assert results["ftl_rejection"] == "PASSED"
     
     def test_validate_equations_components(self):
         """Test individual components of validation."""
@@ -821,7 +816,7 @@ class TestValidationFunction:
         
         # Causality checks should pass
         assert results["causality_check"] == "PASSED"
-        assert results["ftl_rejection"].startswith("PASSED")
+        assert results["ftl_rejection"] == "PASSED"
     
     @patch('sensory_tracer_science.core.sts_equations.WavePropagationWithAttenuation')
     def test_validate_equations_causality_failure(self, mock_wave_prop):

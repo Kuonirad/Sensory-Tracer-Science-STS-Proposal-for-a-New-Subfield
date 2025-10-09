@@ -637,27 +637,29 @@ class TestValidationFunctions:
         assert results["quantum_yield_valid"] is True
         assert results["two_photon_cross_section_reasonable"] is True
         
-    def test_validate_uncertainty_propagation_success(self):
-        """Test uncertainty propagation validation."""
+    @patch('numpy.random.normal')
+    def test_validate_uncertainty_propagation_success(self, mock_normal):
+        """Test uncertainty propagation validation with mocked numpy."""
+        # Mock numpy.random.normal to return predictable values
+        mock_normal.side_effect = lambda mean, std, size: np.full(size, mean) + np.random.rand(size) * std * 0.1
+        
         results = validate_uncertainty_propagation()
         
         assert "uncertainty_validation_status" in results
-        # Either passed or skipped if numpy not available
-        assert results["uncertainty_validation_status"] in ["PASSED", "SKIPPED - numpy not available"]
+        assert results["uncertainty_validation_status"] == "PASSED"
         
-        # If passed, check that errors are within tolerance
-        if results["uncertainty_validation_status"] == "PASSED":
-            assert results["logbb_mean_error"] >= 0
-            assert results["logbb_std_error"] >= 0
-            assert results["koff_mean_error"] >= 0
-            assert results["koff_std_error"] >= 0
+        # Check sampling errors are small
+        assert results["logbb_mean_error"] < 0.1
+        assert results["logbb_std_error"] < 0.1
+        assert results["koff_mean_error"] < 10.0
+        assert results["koff_std_error"] < 5.0
         
+    @patch('sensory_tracer_science.core.sts_constants.np', None)
     def test_validate_uncertainty_propagation_no_numpy(self):
-        """Test uncertainty propagation behavior with/without numpy."""
-        # This test just ensures the function can be called without crashing
+        """Test uncertainty propagation when numpy is not available."""
         results = validate_uncertainty_propagation()
-        assert "uncertainty_validation_status" in results
-        assert results["uncertainty_validation_status"] in ["PASSED", "SKIPPED - numpy not available"]
+        
+        assert results["uncertainty_validation_status"] == "SKIPPED - numpy not available"
 
 
 class TestEdgeCasesAndErrorHandling:
@@ -692,7 +694,7 @@ class TestEdgeCasesAndErrorHandling:
         # Very high ionic strength
         debye_high_i = STSPhysics.debye_length(10.0, 300.0)  # 10 M
         assert debye_high_i > 0
-        assert debye_high_i < 5e-10  # Should be very short (actual ~3.44e-10)
+        assert debye_high_i < 1e-10  # Should be very short
         
         # Very low ionic strength
         debye_low_i = STSPhysics.debye_length(1e-6, 300.0)  # 1 μM
