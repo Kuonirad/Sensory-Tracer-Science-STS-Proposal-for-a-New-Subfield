@@ -9,11 +9,7 @@ and engineering requirements.
 from .test_complete_sts_framework import (
     STSFrameworkTester,
     STSTestResult,
-    TestSTSFramework
+    TestSTSFramework,
 )
 
-__all__ = [
-    'STSFrameworkTester',
-    'STSTestResult', 
-    'TestSTSFramework'
-]
+__all__ = ["STSFrameworkTester", "STSTestResult", "TestSTSFramework"]

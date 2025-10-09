@@ -1,16 +1,16 @@
 """
 Sensory Tracer Science (STS) - Scientific Computing Framework
 
-A rigorous physics-based framework for sensory tracer analysis with complete 
+A rigorous physics-based framework for sensory tracer analysis with complete
 biological realism, quantum mechanical compliance, and thermodynamic consistency.
 
 This package implements the complete STS theoretical framework with:
-- Five fundamental axioms governing sensory information propagation  
+- Five fundamental axioms governing sensory information propagation
 - Three independent validation audits (energy, information, causality)
 - Multiple tracer implementations (optical, biological, quantum)
 - Comprehensive scientific computing standards and documentation
 
-FOUNDATIONAL PRINCIPLE: Complete logical consistency across all principles 
+FOUNDATIONAL PRINCIPLE: Complete logical consistency across all principles
 of physics and applied engineering with no violations permitted.
 
 The framework mathematically demonstrates that energy-conserving, information-preserving,
@@ -19,7 +19,7 @@ and experimentally implementable.
 
 Scientific Standards Compliance:
 - CODATA 2022 fundamental constants
-- Peer-reviewed mathematical foundations  
+- Peer-reviewed mathematical foundations
 - >95% test coverage with continuous integration
 - Complete API documentation with mathematical notation
 - Rigorous error analysis and uncertainty propagation
@@ -51,92 +51,118 @@ __citation__ = """
 
 # Core theoretical framework
 from .core import (
-    STSLimits, ValidationTolerances, ImplementationLimits, STSPhysics,
-    STSState, ConservationOfSensoryInformation, TracerEnergyContinuity,
-    WavePropagationWithAttenuation, STSSystemSolver
-)
-
-# Validation system  
-from .validation import (
-    STSValidator, ValidationResult,
-    EnergyAuditor, InformationAuditor, CausalityAuditor
-)
-
-# Tracer implementations
-from .tracers import (
-    # Fiber-optic (Optical Temporalics)
-    FiberOpticBrillouinTracer, BrillouinTracerExperiment,
-    # Biocompatible (Bio-Temporalics) 
-    BiocompatibleNeuralTracer, NeuralTracerExperiment,
-    # Quantum (Quantum Temporalics)
-    QuantumEnhancedSensoryTracer, QuantumTracerExperiment
+    ConservationOfSensoryInformation,
+    ImplementationLimits,
+    STSLimits,
+    STSPhysics,
+    STSState,
+    STSSystemSolver,
+    TracerEnergyContinuity,
+    ValidationTolerances,
+    WavePropagationWithAttenuation,
 )
 
 # Testing framework
 from .tests import STSFrameworkTester, TestSTSFramework
 
+# Tracer implementations
+from .tracers import (  # Fiber-optic (Optical Temporalics); Biocompatible (Bio-Temporalics); Quantum (Quantum Temporalics)
+    BiocompatibleNeuralTracer,
+    BrillouinTracerExperiment,
+    FiberOpticBrillouinTracer,
+    NeuralTracerExperiment,
+    QuantumEnhancedSensoryTracer,
+    QuantumTracerExperiment,
+)
+
+# Validation system
+from .validation import (
+    CausalityAuditor,
+    EnergyAuditor,
+    InformationAuditor,
+    STSValidator,
+    ValidationResult,
+)
+
 __all__ = [
     # Core framework
-    'STSLimits', 'ValidationTolerances', 'ImplementationLimits', 'STSPhysics',
-    'STSState', 'ConservationOfSensoryInformation', 'TracerEnergyContinuity',
-    'WavePropagationWithAttenuation', 'STSSystemSolver',
-    
+    "STSLimits",
+    "ValidationTolerances",
+    "ImplementationLimits",
+    "STSPhysics",
+    "STSState",
+    "ConservationOfSensoryInformation",
+    "TracerEnergyContinuity",
+    "WavePropagationWithAttenuation",
+    "STSSystemSolver",
     # Validation
-    'STSValidator', 'ValidationResult',
-    'EnergyAuditor', 'InformationAuditor', 'CausalityAuditor',
-    
+    "STSValidator",
+    "ValidationResult",
+    "EnergyAuditor",
+    "InformationAuditor",
+    "CausalityAuditor",
     # Implementations
-    'FiberOpticBrillouinTracer', 'BrillouinTracerExperiment',
-    'BiocompatibleNeuralTracer', 'NeuralTracerExperiment', 
-    'QuantumEnhancedSensoryTracer', 'QuantumTracerExperiment',
-    
+    "FiberOpticBrillouinTracer",
+    "BrillouinTracerExperiment",
+    "BiocompatibleNeuralTracer",
+    "NeuralTracerExperiment",
+    "QuantumEnhancedSensoryTracer",
+    "QuantumTracerExperiment",
     # Testing
-    'STSFrameworkTester', 'TestSTSFramework'
+    "STSFrameworkTester",
+    "TestSTSFramework",
 ]
 
 # Framework metadata
 FRAMEWORK_INFO = {
-    'name': 'Sensory Tracer Science (STS)',
-    'version': __version__,
-    'description': 'Energy-conserving, information-preserving, causality-respecting sensory data propagation',
-    'axioms': 5,
-    'implementations': 3,
-    'validation_audits': 3,
-    'physical_domains': ['optical', 'biological', 'quantum'],
-    'foundational_rule': 'No violation of logic, physics, or engineering'
+    "name": "Sensory Tracer Science (STS)",
+    "version": __version__,
+    "description": "Energy-conserving, information-preserving, causality-respecting sensory data propagation",
+    "axioms": 5,
+    "implementations": 3,
+    "validation_audits": 3,
+    "physical_domains": ["optical", "biological", "quantum"],
+    "foundational_rule": "No violation of logic, physics, or engineering",
 }
+
 
 def get_framework_info():
     """
     Get information about the STS framework.
-    
+
     Returns:
         Dictionary with framework metadata
     """
     return FRAMEWORK_INFO.copy()
 
+
 def quick_validation_test():
     """
     Run a quick validation test to verify framework integrity.
-    
+
     Returns:
         Boolean indicating if framework passes basic validation
     """
     try:
         # Test basic imports and functionality
         validator = STSValidator()
-        
+
         # Test simple valid system
         test_data = {
-            'E_in': 1e-9, 'E_out': 0.99e-9, 'E_dissipated': 0.01e-9,
-            'I_injected': 100, 'I_detected': 99, 'I_lost': 1,
-            'signal_speed': 2e8, 'medium_speed': 3e8
+            "E_in": 1e-9,
+            "E_out": 0.99e-9,
+            "E_dissipated": 0.01e-9,
+            "I_injected": 100,
+            "I_detected": 99,
+            "I_lost": 1,
+            "signal_speed": 2e8,
+            "medium_speed": 3e8,
         }
-        
+
         results = validator.full_validation(test_data)
         is_valid, _ = validator.system_status(results)
-        
+
         return is_valid
-        
+
     except Exception:
         return False
