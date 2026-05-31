@@ -612,7 +612,7 @@ class TestConfigurationSerialization(unittest.TestCase):
             json_str = '{"environment": "production"}'
             config = MockProductionConfig.from_json(json_str)
             
-            self.assertIsInstance(config, MockProductionConfig)
+            self.assertIs(config, mock_instance)
 
     def test_deserialize_from_yaml(self):
         """Test deserializing configuration from YAML."""
@@ -623,7 +623,7 @@ class TestConfigurationSerialization(unittest.TestCase):
             yaml_str = "environment: production\n"
             config = MockProductionConfig.from_yaml(yaml_str)
             
-            self.assertIsInstance(config, MockProductionConfig)
+            self.assertIs(config, mock_instance)
 
 
 class TestConfigurationFileHandling(unittest.TestCase):
@@ -643,7 +643,7 @@ class TestConfigurationFileHandling(unittest.TestCase):
                 
                 config = MockProductionConfig.load_from_file(temp_file)
                 
-                self.assertIsInstance(config, MockProductionConfig)
+                self.assertIs(config, mock_instance)
                 MockProductionConfig.load_from_file.assert_called_once_with(temp_file)
         finally:
             os.unlink(temp_file)
@@ -680,7 +680,7 @@ class TestConfigurationFileHandling(unittest.TestCase):
                 
                 config = MockProductionConfig.load_from_yaml_file(temp_file)
                 
-                self.assertIsInstance(config, MockProductionConfig)
+                self.assertIs(config, mock_instance)
         finally:
             os.unlink(temp_file)
 
