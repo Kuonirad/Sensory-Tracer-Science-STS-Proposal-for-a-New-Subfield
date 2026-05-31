@@ -179,6 +179,54 @@ python test_quantum.py      # Quantum
 - `track_energy_consumption()` - Watch energy use  
 - `check_quantum_limits()` - Check quantum rules
 
+## 🔗 **MCOP Integration — End-to-End Attribution as a Primitive**
+
+STS does not only trace signals through *biological* tissue. The same three
+conservation laws — **energy**, **information**, and **causality** — also govern
+the reasoning loops of the **MCOP** (Meta-Cognitive Optimization Protocol)
+framework. The `sts_mcop_adapter` module bridges the two so you can trace a
+perceptual/activation signal through a *reasoning stack* exactly the way STS
+traces a tracer through neural tissue.
+
+The adapter treats an LLM/MCOP activation flow as **synthetic neural tissue** and
+runs the STS triple-audit over every reasoning step, returning an enriched trace
+with energy budget and information-fidelity metrics.
+
+```python
+import numpy as np
+from sensory_tracer_science import SensoryTracerAttributor
+
+# MCOP kernels are any callables (np.ndarray -> np.ndarray) or objects with
+# an .execute()/.forward()/.step() method — no hard dependency on MCOP.
+kernels = [encoder_kernel, stigmergy_kernel, etch_kernel]   # the MCOP "triad"
+initial_activation = np.asarray(prompt_embedding, dtype=float)
+
+attributor = SensoryTracerAttributor(analyze_tissue=True)
+trace = attributor.attribute(
+    kernels, initial_activation, step_labels=["encoder", "stigmergy", "etch"]
+)
+
+print(trace.report())     # per-step + end-to-end audit
+print(trace.summary())    # JSON-serializable metrics
+assert trace.valid        # all 3 STS audits + acyclic DAG + Landauer floor
+```
+
+**What you get back** (`STSEnrichedTrace`):
+
+- `energy_efficiency` — `E_out / E_in` over the whole chain (energy-conserving).
+- `information_fidelity` — `I_detected / I_injected` (information-preserving).
+- `landauer_efficiency` — dissipation vs. the Landauer bound (physical realism).
+- `dag_acyclic` / `causality_preserved` — DAG-preserving causal ordering.
+- `tissue_metrics` — bio-tracer entropy / mutual-information of the activation
+  flow analyzed as synthetic neural tissue.
+
+This makes **end-to-end attribution a first-class primitive**: any MCOP reasoning
+loop can be wrapped to obtain an auditable energy/information account of how a
+perceptual signal propagates through the reasoning stack. See
+[`STS_MCOP_INTEGRATION_REPORT.md`](STS_MCOP_INTEGRATION_REPORT.md) for the full
+audit and architecture, and
+[`examples/mcop_attribution.py`](examples/mcop_attribution.py) for a runnable demo.
+
 ## 📁 **File Structure**
 
 ```

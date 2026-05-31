@@ -62,6 +62,14 @@ from .core import (
     WavePropagationWithAttenuation,
 )
 
+# MCOP integration bridge (STS <-> Meta-Cognitive Optimization Protocol)
+from .sts_mcop_adapter import (
+    ReasoningStepTrace,
+    SensoryTracerAttributor,
+    STSEnrichedTrace,
+    SyntheticNeuralTissue,
+)
+
 # Testing framework
 from .tests import STSFrameworkTester, TestSTSFramework
 
@@ -111,6 +119,11 @@ __all__ = [
     # Testing
     "STSFrameworkTester",
     "TestSTSFramework",
+    # MCOP integration bridge
+    "SensoryTracerAttributor",
+    "STSEnrichedTrace",
+    "ReasoningStepTrace",
+    "SyntheticNeuralTissue",
 ]
 
 # Framework metadata

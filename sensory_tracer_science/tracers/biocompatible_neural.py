@@ -18,6 +18,10 @@ from ..core.sts_constants import C_VACUUM, HBAR, K_B, ImplementationLimits, STSL
 from ..core.sts_equations import STSState
 from ..validation.sts_validator import STSValidator, ValidationResult
 
+# NumPy 2.x renamed ``np.trapz`` to ``np.trapezoid`` (and removed the alias in
+# later releases). Bind a single name that works across versions.
+_trapezoid = getattr(np, "trapezoid", None) or getattr(np, "trapz")
+
 
 @dataclass
 class BiologicalParameters:
@@ -697,7 +701,7 @@ class BiocompatibleNeuralTracer:
         quantum_violation = avg_quantum_noise > 0.1  # 10% noise threshold
 
         # Energy balance: ATP consumed vs. information processed
-        total_atp_consumed = np.trapz(atp_consumption_history) * self.tissue_volume
+        total_atp_consumed = _trapezoid(atp_consumption_history) * self.tissue_volume
         total_information = information_metrics["total_information_bits"]
 
         # Landauer limit compliance
@@ -1021,7 +1025,7 @@ class BiocompatibleNeuralTracer:
         # Corrected ATP energy calculation (handle negative ΔG properly)
         # ATP hydrolysis releases energy, so we use absolute value
         total_atp_consumed = (
-            np.trapz(np.abs(atp_consumption_history)) * self.tissue_volume
+            _trapezoid(np.abs(atp_consumption_history)) * self.tissue_volume
         )
 
         # Ensure we have some ATP consumption for realistic scenario
