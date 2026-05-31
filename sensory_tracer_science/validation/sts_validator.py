@@ -18,6 +18,10 @@ import numpy as np
 
 from ..core.sts_constants import C_VACUUM, STSLimits, ValidationTolerances
 
+# NumPy 2.x renamed ``np.trapz`` to ``np.trapezoid`` (and removed the alias in
+# later releases). Bind a single name that works across versions.
+_trapezoid = getattr(np, "trapezoid", None) or getattr(np, "trapz")
+
 
 @dataclass
 class ValidationResult:
@@ -113,8 +117,8 @@ class EnergyAuditor:
             ValidationResult for time-integrated energy balance
         """
         # Integrate power over time to get energy
-        total_dissipated = np.trapz(dissipation_trace, dx=dt)
-        total_sourced = np.trapz(source_trace, dx=dt)
+        total_dissipated = _trapezoid(dissipation_trace, dx=dt)
+        total_sourced = _trapezoid(source_trace, dx=dt)
 
         # Energy change should equal net energy flow
         initial_energy = energy_trace[0]
