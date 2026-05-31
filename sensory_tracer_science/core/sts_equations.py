@@ -451,7 +451,7 @@ class STSSystemSolver:
         velocity_field = np.zeros((*spatial_grid.shape[:-1], 3))
 
         for step in range(time_steps):
-            current_time = step * dt
+            current_time = initial_state.time + step * dt
 
             # Evolve energy field
             energy_field = self.energy_continuity.time_evolution(
@@ -523,16 +523,16 @@ def validate_equations() -> Dict[str, Any]:
         )
         results["causality_check"] = "PASSED"
     except ValueError:
-        results["causality_check"] = "FAILED - velocity exceeds causality limit"
+        results["causality_check"] = "FAILED"
 
     # Test faster-than-light rejection
     try:
         _ = WavePropagationWithAttenuation(
             velocity=4e8, attenuation=1e-3, refractive_index=1.0  # Faster than light
         )
-        results["ftl_rejection"] = "FAILED - should have rejected FTL velocity"
+        results["ftl_rejection"] = "FAILED"
     except ValueError:
-        results["ftl_rejection"] = "PASSED - correctly rejected FTL velocity"
+        results["ftl_rejection"] = "PASSED"
 
     results["validation_status"] = "PASSED"
     return results

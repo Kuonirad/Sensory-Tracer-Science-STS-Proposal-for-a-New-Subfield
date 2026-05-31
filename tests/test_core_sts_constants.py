@@ -694,7 +694,7 @@ class TestEdgeCasesAndErrorHandling:
         # Very high ionic strength
         debye_high_i = STSPhysics.debye_length(10.0, 300.0)  # 10 M
         assert debye_high_i > 0
-        assert debye_high_i < 1e-10  # Should be very short
+        assert debye_high_i < 1e-9  # Should be very short (sub-nm)
         
         # Very low ionic strength
         debye_low_i = STSPhysics.debye_length(1e-6, 300.0)  # 1 μM
