@@ -1164,8 +1164,11 @@ class NeuralTracerExperiment:
 
         # Neural activity pattern - traveling wave
         neural_activity = np.zeros((nx, ny, nz))
+        activity_width = max(1, nx // 8)  # Guard against zero width for small grids
         for i in range(nx):
-            activity_strength = 10.0 * np.exp(-(((i - nx // 2) / (nx // 8)) ** 2))  # Hz
+            activity_strength = 10.0 * np.exp(
+                -(((i - nx // 2) / activity_width) ** 2)
+            )  # Hz
             neural_activity[i, :, :] = activity_strength
 
         return spatial_grid, initial_conc, neural_activity
