@@ -121,7 +121,7 @@ class TestProductionConfigConnectionStrings:
         config = make_config()
         with patch.dict(os.environ, {config.security.jwt_secret_env_var: "jwt-token"}):
             settings = config.get_security_settings()
-        assert settings["jwt_secret"] == "jwt-token"
+        assert settings["jwt_secret"] == "jwt-token"  # noqa: S105 - test fixture value
         assert settings["compliance_level"] == config.security.compliance_level.value
 
 

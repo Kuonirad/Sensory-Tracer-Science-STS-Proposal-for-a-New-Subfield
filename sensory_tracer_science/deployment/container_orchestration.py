@@ -256,7 +256,7 @@ ENV PYTHONPATH=/app \\
 
 # Default command
 CMD ["python", "-m", "sensory_tracer_science.api.server"]
-"""
+"""  # noqa: S608 - generated Dockerfile text, not a SQL query
 
         return dockerfile_content
 
@@ -861,7 +861,8 @@ echo "Container build completed successfully!"
         build_script_path = scripts_path / "build.sh"
         with open(build_script_path, "w") as f:
             f.write(build_script)
-        os.chmod(build_script_path, 0o755)
+        # Owner-only rwx; generated scripts must not be group/world writable.
+        os.chmod(build_script_path, 0o700)
 
         # Deploy script
         deploy_script = f"""#!/bin/bash
@@ -883,7 +884,8 @@ echo "  kubectl get pods -n {self.kubernetes_config.namespace}"
         deploy_script_path = scripts_path / "deploy.sh"
         with open(deploy_script_path, "w") as f:
             f.write(deploy_script)
-        os.chmod(deploy_script_path, 0o755)
+        # Owner-only rwx; generated scripts must not be group/world writable.
+        os.chmod(deploy_script_path, 0o700)
 
         # Generate README
         readme_content = f"""# STS Framework Deployment Package
