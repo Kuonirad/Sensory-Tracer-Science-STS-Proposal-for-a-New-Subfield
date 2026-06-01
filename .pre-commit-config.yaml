@@ -70,36 +70,19 @@ repos:
     hooks:
       - id: validate-codata-constants
         name: Validate CODATA 2022 constants
-        entry: python -c "
-          from sensory_tracer_science.core.sts_constants import *;
-          import sys;
-          assert abs(K_B - 1.380649e-23) < 1e-30, 'Boltzmann constant incorrect';
-          assert abs(HBAR - 1.054571817e-34) < 1e-40, 'Planck constant incorrect';
-          assert abs(C_VACUUM - 299792458.0) < 1e-6, 'Speed of light incorrect';
-          print('✅ CODATA 2022 constants validated')
-        "
+        entry: python -c "from sensory_tracer_science.core.sts_constants import K_B, HBAR, C_VACUUM; assert abs(K_B - 1.380649e-23) < 1e-30, 'Boltzmann constant incorrect'; assert abs(HBAR - 1.054571817e-34) < 1e-40, 'Planck constant incorrect'; assert abs(C_VACUUM - 299792458.0) < 1e-6, 'Speed of light incorrect'; print('CODATA 2022 constants validated')"
         language: system
         pass_filenames: false
 
-      - id: validate-landauer-compliance  
+      - id: validate-landauer-compliance
         name: Validate Landauer compliance
-        entry: python -c "
-          from sensory_tracer_science.core.sts_constants import STSLimits;
-          landauer = STSLimits.landauer_limit(310.0);
-          assert landauer > 0, 'Landauer limit must be positive';
-          assert landauer < 1e-20, 'Landauer limit unrealistic';
-          print(f'✅ Landauer limit: {landauer:.2e} J/bit')
-        "
+        entry: python -c "from sensory_tracer_science.core.sts_constants import STSLimits; landauer = STSLimits.landauer_limit(310.0); assert landauer > 0, 'Landauer limit must be positive'; assert landauer < 1e-20, 'Landauer limit unrealistic'; print('Landauer limit OK')"
         language: system
         pass_filenames: false
 
       - id: validate-framework-integrity
         name: Validate framework integrity
-        entry: python -c "
-          import sensory_tracer_science as sts;
-          assert sts.quick_validation_test(), 'Framework validation failed';
-          print('✅ Framework integrity validated')
-        "
+        entry: python -c "import sensory_tracer_science as sts; assert sts.quick_validation_test(), 'Framework validation failed'; print('Framework integrity validated')"
         language: system
         pass_filenames: false
 

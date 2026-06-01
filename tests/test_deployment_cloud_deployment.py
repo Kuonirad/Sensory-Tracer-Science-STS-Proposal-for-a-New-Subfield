@@ -13,6 +13,7 @@ Tests all cloud deployment functionality including:
 """
 
 import json
+import re
 import unittest
 from dataclasses import FrozenInstanceError
 from datetime import datetime
@@ -27,6 +28,13 @@ from sensory_tracer_science.deployment.cloud_deployment import (
     DeploymentType,
     create_cloud_deployment_demo,
 )
+
+
+def _collapse_ws(text: str) -> str:
+    """Collapse runs of spaces/tabs to a single space (HCL output is
+    column-aligned, so assertions on ``key = value`` must be
+    whitespace-insensitive)."""
+    return re.sub(r"[ \t]+", " ", text)
 
 
 class TestCloudProvider(unittest.TestCase):
@@ -274,7 +282,9 @@ class TestAWSTerraformGeneration(unittest.TestCase):
     @patch("builtins.print")
     def test_terraform_config_content(self, mock_print):
         """Test specific content in Terraform configuration."""
-        terraform_config = self.manager.generate_aws_terraform(self.infrastructure)
+        terraform_config = _collapse_ws(
+            self.manager.generate_aws_terraform(self.infrastructure)
+        )
 
         # Check region configuration
         self.assertIn(f'region = "{self.infrastructure.region}"', terraform_config)
@@ -316,6 +326,7 @@ class TestAWSTerraformGeneration(unittest.TestCase):
 
         self.assertIsInstance(subnets_config, str)
         self.assertGreater(len(subnets_config), 100)
+        subnets_config = _collapse_ws(subnets_config)
 
         # Check for subnet resources
         self.assertIn('resource "aws_subnet" "sts_public_subnet_0"', subnets_config)
@@ -339,6 +350,7 @@ class TestAWSTerraformGeneration(unittest.TestCase):
 
         self.assertIsInstance(subnets_config, str)
         self.assertGreater(len(subnets_config), 100)
+        subnets_config = _collapse_ws(subnets_config)
 
         # Check for subnet resources
         self.assertIn('resource "aws_subnet" "sts_private_subnet_0"', subnets_config)
@@ -358,6 +370,7 @@ class TestAWSTerraformGeneration(unittest.TestCase):
 
         self.assertIsInstance(security_groups_config, str)
         self.assertGreater(len(security_groups_config), 500)
+        security_groups_config = _collapse_ws(security_groups_config)
 
         # Check for security group resources
         expected_security_groups = [

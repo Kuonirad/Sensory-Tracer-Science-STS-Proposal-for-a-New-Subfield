@@ -119,7 +119,7 @@ class BiochemicalTracer:
     def _calculate_stokes_radius(self) -> float:
         """Calculate hydrodynamic radius using Stokes-Einstein relation."""
         # Empirical relationship: r ∝ MW^(1/3) for globular molecules
-        return (self.molecular_weight / 1000.0) ** (1 / 3) * 1e-9  # meters
+        return float((self.molecular_weight / 1000.0) ** (1 / 3) * 1e-9)  # meters
 
     def _calculate_diffusion_coefficient(self, temperature: float = 310.0) -> float:
         """Calculate diffusion coefficient from Stokes radius."""
@@ -179,7 +179,7 @@ class BiocompatibleNeuralTracer:
         spatial_grid: np.ndarray,
         time_steps: int,
         dt: float,
-    ) -> Dict[str, np.ndarray]:
+    ) -> Dict[str, Any]:
         """
         Solve comprehensive diffusion-advection equation with biological realism.
 
@@ -359,7 +359,7 @@ class BiocompatibleNeuralTracer:
             "inflammatory_response": inflammatory_response,
         }
 
-    def calculate_bbb_permeability(self, tracer_properties: Dict[str, float]) -> float:
+    def calculate_bbb_permeability(self, tracer_properties: Dict[str, Any]) -> float:
         """
         Calculate blood-brain barrier permeability using logBB model.
 
@@ -402,7 +402,7 @@ class BiocompatibleNeuralTracer:
             permeability - efflux_rate, 0.1 * self.params.bbb_permeability_coefficient
         )
 
-        return net_permeability
+        return float(net_permeability)
 
     def calculate_binding_kinetics(
         self, concentration_field: np.ndarray, bound_fraction: np.ndarray, dt: float
@@ -1164,8 +1164,11 @@ class NeuralTracerExperiment:
 
         # Neural activity pattern - traveling wave
         neural_activity = np.zeros((nx, ny, nz))
+        activity_width = max(1, nx // 8)  # Guard against zero width for small grids
         for i in range(nx):
-            activity_strength = 10.0 * np.exp(-(((i - nx // 2) / (nx // 8)) ** 2))  # Hz
+            activity_strength = 10.0 * np.exp(
+                -(((i - nx // 2) / activity_width) ** 2)
+            )  # Hz
             neural_activity[i, :, :] = activity_strength
 
         return spatial_grid, initial_conc, neural_activity

@@ -423,11 +423,11 @@ class TestDockerfileGeneration(unittest.TestCase):
         # Check custom port
         self.assertIn("EXPOSE 9000", dockerfile)
 
-        # Check custom user ID (should be overridden by environment)
-        self.assertIn("useradd -r -g sts -u 1001", dockerfile)  # Production override
+        # Check custom user ID from the supplied container config
+        self.assertIn("useradd -r -g sts -u 2000", dockerfile)
 
-        # Check custom health check path
-        self.assertIn("http://localhost:8000/health", dockerfile)  # Production values used
+        # Check custom health check path/port from the supplied container config
+        self.assertIn("http://localhost:9000/api/status", dockerfile)
 
     @patch("builtins.print")
     def test_dockerfile_environment_variables(self, mock_print):
@@ -639,15 +639,14 @@ class TestKubernetesManifestGeneration(unittest.TestCase):
         """Test Kubernetes deployment manifest generation."""
         orchestrator = ContainerOrchestrator(self.production_config)
         
-        # Mock the method since we need to implement it
-        with patch.object(orchestrator, "generate_kubernetes_manifests") as mock_method:
+        with patch.object(orchestrator, "generate_kubernetes_deployment") as mock_method:
             mock_method.return_value = {
                 "apiVersion": "apps/v1",
                 "kind": "Deployment",
                 "metadata": {"name": "sts-app"},
             }
             
-            manifests = orchestrator.generate_kubernetes_manifests()
+            manifests = orchestrator.generate_kubernetes_deployment()
             
             self.assertIsInstance(manifests, dict)
             self.assertEqual(manifests["apiVersion"], "apps/v1")

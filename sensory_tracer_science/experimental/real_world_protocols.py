@@ -62,14 +62,14 @@ class SafetyProtocol:
 
     # Monitoring Systems
     continuous_monitoring: bool = True
-    alert_thresholds: Dict[str, float] = None
+    alert_thresholds: Optional[Dict[str, float]] = None
 
     # Personnel Safety
     required_training_hours: float = 40.0
-    protective_equipment: List[str] = None
+    protective_equipment: Optional[List[str]] = None
     maximum_exposure_per_day: float = 8.0  # hours
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.alert_thresholds is None:
             self.alert_thresholds = {
                 "temperature": 315.0,  # K (42°C - fever threshold)
@@ -119,9 +119,9 @@ class RealWorldProtocolManager:
         self.measurement_count = 0
 
         # Data storage
-        self.experiment_data = []
-        self.safety_log = []
-        self.compliance_record = []
+        self.experiment_data: List[Any] = []
+        self.safety_log: List[Any] = []
+        self.compliance_record: List[Any] = []
 
         # Set up logging
         self._setup_logging()
@@ -130,7 +130,7 @@ class RealWorldProtocolManager:
         self.logger.info(f"Experiment ID: {experiment_id}")
         self.logger.info(f"Protocol Version: {protocol_version}")
 
-    def _setup_logging(self):
+    def _setup_logging(self) -> None:
         """Set up comprehensive logging system."""
 
         # Create logger with experiment-specific name
@@ -252,7 +252,7 @@ class RealWorldProtocolManager:
 
         # Safety monitoring setup
         start_time = time.time()
-        safety_checks = []
+        safety_checks: List[Any] = []
 
         try:
             self.experiment_active = True
@@ -536,7 +536,7 @@ class RealWorldProtocolManager:
     ) -> Dict[str, Any]:
         """Assess optical safety for Brillouin experiments."""
 
-        optical_safety = {
+        optical_safety: Dict[str, Any] = {
             "laser_power_safe": True,
             "optical_damage_risk": False,
             "eye_safety_compliant": True,
@@ -602,7 +602,7 @@ class RealWorldProtocolManager:
 
         return compliance_doc
 
-    def _emergency_shutdown(self):
+    def _emergency_shutdown(self) -> None:
         """Execute emergency shutdown procedures."""
 
         self.logger.critical("EMERGENCY SHUTDOWN INITIATED")
@@ -669,7 +669,7 @@ PROTOCOL STATUS: READY FOR PRODUCTION DEPLOYMENT
 
 
 # Example usage function
-def run_production_validation():
+def run_production_validation() -> bool:
     """Run a complete production validation sequence."""
 
     print("🚀 STS PRODUCTION VALIDATION SEQUENCE")

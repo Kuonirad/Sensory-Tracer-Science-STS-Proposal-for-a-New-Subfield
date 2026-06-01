@@ -45,7 +45,7 @@ class EnergyAuditor:
     Validates: E_in = E_out + E_dissipated within 1 femtojoule tolerance
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.tolerance = ValidationTolerances.ENERGY_AUDIT_TOLERANCE
 
     def energy_audit(
@@ -142,7 +142,7 @@ class InformationAuditor:
     Validates: I_injected = I_detected + I_lost within 1% tolerance
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.tolerance = ValidationTolerances.INFORMATION_BALANCE_TOLERANCE
 
     def information_balance(
@@ -244,7 +244,7 @@ class CausalityAuditor:
     Validates: signal_speed ≤ medium_speed with zero tolerance
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.tolerance = ValidationTolerances.CAUSALITY_TOLERANCE  # Zero tolerance
 
     def causality_check(
@@ -331,7 +331,7 @@ class STSValidator:
     Any failure in any audit immediately invalidates the entire system.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize all audit subsystems."""
         self.energy_auditor = EnergyAuditor()
         self.information_auditor = InformationAuditor()
@@ -539,7 +539,7 @@ def run_validation_tests() -> Dict[str, Any]:
         Dictionary with test results
     """
     validator = STSValidator()
-    results = {}
+    results: Dict[str, Any] = {}
 
     # Test 1: Valid system should pass
     valid_data = create_test_system_data(valid=True)

@@ -10,6 +10,7 @@ import math
 from typing import Any, Dict
 
 # Import numpy for uncertainty propagation (optional)
+np: Any
 try:
     import numpy as np
 except ImportError:
@@ -465,7 +466,7 @@ def validate_augmented_physics() -> Dict[str, Any]:
     Returns:
         Dictionary with comprehensive validation results
     """
-    results = {}
+    results: Dict[str, Any] = {}
 
     # Test Debye length calculation (with realistic tolerance for ionic activity effects)
     debye_150mM = STSPhysics.debye_length(0.15, 310.0)
@@ -518,7 +519,7 @@ def validate_physical_consistency() -> Dict[str, Any]:
     Returns:
         Dictionary with validation results
     """
-    results = {
+    results: Dict[str, Any] = {
         "landauer_limit_300K": STSLimits.landauer_limit(300.0),
         "heisenberg_limit": STSLimits.heisenberg_uncertainty(),
         "light_speed_in_silica": STSLimits.max_speed_in_medium(1.46),

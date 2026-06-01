@@ -41,11 +41,11 @@ class MonitoringMetric:
     metric_type: MetricType
     description: str
     unit: str
-    labels: Dict[str, str] = None
+    labels: Optional[Dict[str, str]] = None
     value: float = 0.0
-    timestamp: datetime = None
+    timestamp: Optional[datetime] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.labels is None:
             self.labels = {}
         if self.timestamp is None:
@@ -64,9 +64,9 @@ class AlertRule:
     severity: AlertSeverity
     duration: int = 300  # seconds
     enabled: bool = True
-    notification_channels: List[str] = None
+    notification_channels: Optional[List[str]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.notification_channels is None:
             self.notification_channels = []
 
@@ -87,10 +87,10 @@ class MonitoringSystem:
         """Initialize monitoring system."""
 
         self.environment = environment
-        self.metrics_storage = {}
-        self.alert_rules = {}
-        self.active_alerts = {}
-        self.performance_baselines = {}
+        self.metrics_storage: Dict[str, Any] = {}
+        self.alert_rules: Dict[str, Any] = {}
+        self.active_alerts: Dict[str, Any] = {}
+        self.performance_baselines: Dict[str, Any] = {}
 
         # Initialize core metrics
         self._initialize_core_metrics()
@@ -100,7 +100,7 @@ class MonitoringSystem:
 
         print(f"📊 Monitoring system initialized for {environment}")
 
-    def _initialize_core_metrics(self):
+    def _initialize_core_metrics(self) -> None:
         """Initialize core STS framework metrics."""
 
         core_metrics = [
@@ -252,7 +252,7 @@ class MonitoringSystem:
         for metric in core_metrics:
             self.metrics_storage[metric.name] = metric
 
-    def _setup_default_alerts(self):
+    def _setup_default_alerts(self) -> None:
         """Set up default alert rules for production monitoring."""
 
         default_alerts = [
@@ -357,7 +357,7 @@ class MonitoringSystem:
 
     def record_metric(
         self, name: str, value: float, labels: Optional[Dict[str, str]] = None
-    ):
+    ) -> None:
         """Record a metric value."""
 
         if name in self.metrics_storage:
@@ -375,7 +375,7 @@ class MonitoringSystem:
 
     def increment_counter(
         self, name: str, amount: float = 1.0, labels: Optional[Dict[str, str]] = None
-    ):
+    ) -> None:
         """Increment a counter metric."""
 
         if name in self.metrics_storage:
@@ -389,12 +389,11 @@ class MonitoringSystem:
         else:
             print(f"⚠️ Unknown counter metric: {name}")
 
-    def _check_alert_conditions(self, metric: MonitoringMetric):
+    def _check_alert_conditions(self, metric: MonitoringMetric) -> None:
         """Check if metric violates any alert conditions."""
 
         for alert_name, alert_rule in self.alert_rules.items():
             if alert_rule.metric_name == metric.name and alert_rule.enabled:
-
                 condition_met = False
 
                 if alert_rule.condition == "greater_than":
@@ -407,7 +406,7 @@ class MonitoringSystem:
                 if condition_met:
                     self._trigger_alert(alert_rule, metric)
 
-    def _trigger_alert(self, alert_rule: AlertRule, metric: MonitoringMetric):
+    def _trigger_alert(self, alert_rule: AlertRule, metric: MonitoringMetric) -> None:
         """Trigger an alert and send notifications."""
 
         alert_id = f"{alert_rule.name}_{int(time.time())}"
@@ -435,10 +434,10 @@ class MonitoringSystem:
 
     def _send_alert_notifications(
         self, alert_rule: AlertRule, alert_data: Dict[str, Any]
-    ):
+    ) -> None:
         """Send alert notifications to configured channels."""
 
-        for channel in alert_rule.notification_channels:
+        for channel in alert_rule.notification_channels or []:
             if channel == "email":
                 self._send_email_notification(alert_data)
             elif channel == "slack":
@@ -448,19 +447,19 @@ class MonitoringSystem:
             elif channel == "sms":
                 self._send_sms_notification(alert_data)
 
-    def _send_email_notification(self, alert_data: Dict[str, Any]):
+    def _send_email_notification(self, alert_data: Dict[str, Any]) -> None:
         """Send email notification (placeholder)."""
         print(f"📧 Email notification sent for alert: {alert_data['rule_name']}")
 
-    def _send_slack_notification(self, alert_data: Dict[str, Any]):
+    def _send_slack_notification(self, alert_data: Dict[str, Any]) -> None:
         """Send Slack notification (placeholder)."""
         print(f"💬 Slack notification sent for alert: {alert_data['rule_name']}")
 
-    def _send_pagerduty_notification(self, alert_data: Dict[str, Any]):
+    def _send_pagerduty_notification(self, alert_data: Dict[str, Any]) -> None:
         """Send PagerDuty notification (placeholder)."""
         print(f"📟 PagerDuty notification sent for alert: {alert_data['rule_name']}")
 
-    def _send_sms_notification(self, alert_data: Dict[str, Any]):
+    def _send_sms_notification(self, alert_data: Dict[str, Any]) -> None:
         """Send SMS notification (placeholder)."""
         print(f"📱 SMS notification sent for alert: {alert_data['rule_name']}")
 
@@ -701,7 +700,7 @@ class MonitoringSystem:
     def _export_json_format(self) -> str:
         """Export metrics in JSON format."""
 
-        metrics_data = {
+        metrics_data: Dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "environment": self.environment,
             "metrics": {},
@@ -720,7 +719,7 @@ class MonitoringSystem:
         return json.dumps(metrics_data, indent=2)
 
 
-def run_monitoring_demo():
+def run_monitoring_demo() -> "MonitoringSystem":
     """Demonstrate monitoring system capabilities."""
 
     print("📊 STS Monitoring System Demo")

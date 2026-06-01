@@ -51,14 +51,14 @@ class CloudInfrastructure:
 
     # Network configuration
     vpc_cidr: str = "10.0.0.0/16"
-    public_subnets: List[str] = None
-    private_subnets: List[str] = None
+    public_subnets: Optional[List[str]] = None
+    private_subnets: Optional[List[str]] = None
 
     # Security settings
     encryption_enabled: bool = True
-    security_groups: List[str] = None
+    security_groups: Optional[List[str]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.public_subnets is None:
             self.public_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
         if self.private_subnets is None:
@@ -114,7 +114,7 @@ resource "aws_vpc" "sts_vpc" {{
   cidr_block           = "{infrastructure.vpc_cidr}"
   enable_dns_hostnames = true
   enable_dns_support   = true
-  
+
   tags = {{
     Name        = "sts-vpc"
     Environment = "production"
@@ -125,7 +125,7 @@ resource "aws_vpc" "sts_vpc" {{
 # Internet Gateway
 resource "aws_internet_gateway" "sts_igw" {{
   vpc_id = aws_vpc.sts_vpc.id
-  
+
   tags = {{
     Name = "sts-igw"
   }}
@@ -134,13 +134,13 @@ resource "aws_internet_gateway" "sts_igw" {{
 # Public Subnets
 {self._generate_aws_public_subnets(infrastructure)}
 
-# Private Subnets  
+# Private Subnets
 {self._generate_aws_private_subnets(infrastructure)}
 
 # NAT Gateway
 resource "aws_eip" "sts_nat_eip" {{
   domain = "vpc"
-  
+
   tags = {{
     Name = "sts-nat-eip"
   }}
@@ -149,23 +149,23 @@ resource "aws_eip" "sts_nat_eip" {{
 resource "aws_nat_gateway" "sts_nat" {{
   allocation_id = aws_eip.sts_nat_eip.id
   subnet_id     = aws_subnet.sts_public_subnet_0.id
-  
+
   tags = {{
     Name = "sts-nat"
   }}
-  
+
   depends_on = [aws_internet_gateway.sts_igw]
 }}
 
 # Route Tables
 resource "aws_route_table" "sts_public_rt" {{
   vpc_id = aws_vpc.sts_vpc.id
-  
+
   route {{
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.sts_igw.id
   }}
-  
+
   tags = {{
     Name = "sts-public-rt"
   }}
@@ -173,12 +173,12 @@ resource "aws_route_table" "sts_public_rt" {{
 
 resource "aws_route_table" "sts_private_rt" {{
   vpc_id = aws_vpc.sts_vpc.id
-  
+
   route {{
     cidr_block = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.sts_nat.id
   }}
-  
+
   tags = {{
     Name = "sts-private-rt"
   }}
@@ -189,7 +189,7 @@ resource "aws_eks_cluster" "sts_cluster" {{
   name     = "sts-production-cluster"
   role_arn = aws_iam_role.sts_cluster_role.arn
   version  = "1.28"
-  
+
   vpc_config {{
     subnet_ids = concat(
       [aws_subnet.sts_public_subnet_0.id, aws_subnet.sts_public_subnet_1.id],
@@ -198,21 +198,21 @@ resource "aws_eks_cluster" "sts_cluster" {{
     endpoint_private_access = true
     endpoint_public_access  = true
   }}
-  
+
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-  
+
   encryption_config {{
     resources = ["secrets"]
     provider {{
       key_id = aws_kms_key.sts_kms_key.arn
     }}
   }}
-  
+
   tags = {{
     Name        = "sts-production-cluster"
     Environment = "production"
   }}
-  
+
   depends_on = [
     aws_iam_role_policy_attachment.sts_cluster_policy,
     aws_iam_role_policy_attachment.sts_vpc_resource_controller,
@@ -225,23 +225,23 @@ resource "aws_eks_node_group" "sts_node_group" {{
   node_group_name = "sts-node-group"
   node_role_arn   = aws_iam_role.sts_node_role.arn
   subnet_ids      = [aws_subnet.sts_private_subnet_0.id, aws_subnet.sts_private_subnet_1.id]
-  
+
   instance_types = ["{self._get_aws_instance_type(infrastructure.instance_type)}"]
-  
+
   scaling_config {{
     desired_size = {infrastructure.min_instances}
     max_size     = {infrastructure.max_instances}
     min_size     = {infrastructure.min_instances}
   }}
-  
+
   update_config {{
     max_unavailable = 1
   }}
-  
+
   tags = {{
     Name = "sts-node-group"
   }}
-  
+
   depends_on = [
     aws_iam_role_policy_attachment.sts_node_worker_policy,
     aws_iam_role_policy_attachment.sts_node_cni_policy,
@@ -253,7 +253,7 @@ resource "aws_eks_node_group" "sts_node_group" {{
 resource "aws_db_subnet_group" "sts_db_subnet_group" {{
   name       = "sts-db-subnet-group"
   subnet_ids = [aws_subnet.sts_private_subnet_0.id, aws_subnet.sts_private_subnet_1.id]
-  
+
   tags = {{
     Name = "sts-db-subnet-group"
   }}
@@ -266,24 +266,24 @@ resource "aws_db_instance" "sts_database" {{
   instance_class         = "db.t3.large"
   allocated_storage      = {infrastructure.storage_size_gb}
   max_allocated_storage  = {infrastructure.storage_size_gb * 2}
-  
+
   db_name  = "sts_production"
   username = "sts_user"
   password = "changeme"  # Use AWS Secrets Manager in production
-  
+
   vpc_security_group_ids = [aws_security_group.sts_db_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.sts_db_subnet_group.name
-  
+
   backup_retention_period = 7
   backup_window          = "03:00-04:00"
   maintenance_window     = "sun:04:00-sun:05:00"
-  
+
   storage_encrypted = {str(infrastructure.encryption_enabled).lower()}
   kms_key_id       = aws_kms_key.sts_kms_key.arn
-  
+
   skip_final_snapshot = false
   final_snapshot_identifier = "sts-db-final-snapshot-${{timestamp()}}"
-  
+
   tags = {{
     Name = "sts-production-db"
   }}
@@ -298,22 +298,22 @@ resource "aws_elasticache_subnet_group" "sts_redis_subnet_group" {{
 resource "aws_elasticache_replication_group" "sts_redis" {{
   replication_group_id         = "sts-redis"
   description                  = "STS Production Redis Cluster"
-  
+
   node_type                    = "cache.t3.micro"
   port                         = 6379
   parameter_group_name         = "default.redis7"
-  
+
   num_cache_clusters           = 2
   automatic_failover_enabled   = true
   multi_az_enabled            = true
-  
+
   subnet_group_name           = aws_elasticache_subnet_group.sts_redis_subnet_group.name
   security_group_ids          = [aws_security_group.sts_redis_sg.id]
-  
+
   at_rest_encryption_enabled  = true
   transit_encryption_enabled  = true
   auth_token                  = "changeme"  # Use AWS Secrets Manager in production
-  
+
   tags = {{
     Name = "sts-redis"
   }}
@@ -323,7 +323,7 @@ resource "aws_elasticache_replication_group" "sts_redis" {{
 resource "aws_kms_key" "sts_kms_key" {{
   description             = "STS Production KMS Key"
   deletion_window_in_days = 7
-  
+
   tags = {{
     Name = "sts-kms-key"
   }}
@@ -371,7 +371,7 @@ output "redis_endpoint" {{
 
         subnets_config = ""
         for i, (subnet_cidr, az) in enumerate(
-            zip(infrastructure.public_subnets, infrastructure.availability_zones)
+            zip(infrastructure.public_subnets or [], infrastructure.availability_zones)
         ):
             subnets_config += f"""
 resource "aws_subnet" "sts_public_subnet_{i}" {{
@@ -379,7 +379,7 @@ resource "aws_subnet" "sts_public_subnet_{i}" {{
   cidr_block        = "{subnet_cidr}"
   availability_zone = "{az}"
   map_public_ip_on_launch = true
-  
+
   tags = {{
     Name = "sts-public-subnet-{i}"
     "kubernetes.io/role/elb" = "1"
@@ -398,14 +398,14 @@ resource "aws_route_table_association" "sts_public_rta_{i}" {{
 
         subnets_config = ""
         for i, (subnet_cidr, az) in enumerate(
-            zip(infrastructure.private_subnets, infrastructure.availability_zones)
+            zip(infrastructure.private_subnets or [], infrastructure.availability_zones)
         ):
             subnets_config += f"""
 resource "aws_subnet" "sts_private_subnet_{i}" {{
   vpc_id            = aws_vpc.sts_vpc.id
   cidr_block        = "{subnet_cidr}"
   availability_zone = "{az}"
-  
+
   tags = {{
     Name = "sts-private-subnet-{i}"
     "kubernetes.io/role/internal-elb" = "1"
@@ -427,21 +427,21 @@ resource "aws_route_table_association" "sts_private_rta_{i}" {{
 resource "aws_security_group" "sts_cluster_sg" {
   name_prefix = "sts-cluster-sg"
   vpc_id      = aws_vpc.sts_vpc.id
-  
+
   ingress {
     from_port = 443
     to_port   = 443
     protocol  = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   egress {
     from_port = 0
     to_port   = 0
     protocol  = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   tags = {
     Name = "sts-cluster-sg"
   }
@@ -451,14 +451,14 @@ resource "aws_security_group" "sts_cluster_sg" {
 resource "aws_security_group" "sts_db_sg" {
   name_prefix = "sts-db-sg"
   vpc_id      = aws_vpc.sts_vpc.id
-  
+
   ingress {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
     security_groups = [aws_security_group.sts_app_sg.id]
   }
-  
+
   tags = {
     Name = "sts-db-sg"
   }
@@ -468,14 +468,14 @@ resource "aws_security_group" "sts_db_sg" {
 resource "aws_security_group" "sts_redis_sg" {
   name_prefix = "sts-redis-sg"
   vpc_id      = aws_vpc.sts_vpc.id
-  
+
   ingress {
     from_port       = 6379
     to_port         = 6379
     protocol        = "tcp"
     security_groups = [aws_security_group.sts_app_sg.id]
   }
-  
+
   tags = {
     Name = "sts-redis-sg"
   }
@@ -485,21 +485,21 @@ resource "aws_security_group" "sts_redis_sg" {
 resource "aws_security_group" "sts_app_sg" {
   name_prefix = "sts-app-sg"
   vpc_id      = aws_vpc.sts_vpc.id
-  
+
   ingress {
     from_port = 8000
     to_port   = 8000
     protocol  = "tcp"
     cidr_blocks = ["10.0.0.0/16"]
   }
-  
+
   egress {
     from_port = 0
     to_port   = 0
     protocol  = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   tags = {
     Name = "sts-app-sg"
   }
@@ -512,7 +512,7 @@ resource "aws_security_group" "sts_app_sg" {
 # EKS Cluster IAM Role
 resource "aws_iam_role" "sts_cluster_role" {
   name = "sts-cluster-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -540,7 +540,7 @@ resource "aws_iam_role_policy_attachment" "sts_vpc_resource_controller" {
 # EKS Node Group IAM Role
 resource "aws_iam_role" "sts_node_role" {
   name = "sts-node-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -751,7 +751,7 @@ resource "aws_iam_role_policy_attachment" "sts_node_registry_policy" {
     ) -> Dict[str, Any]:
         """Generate cost optimization recommendations."""
 
-        recommendations = {
+        recommendations: Dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "provider": self.provider.value,
             "estimated_monthly_cost": self._calculate_estimated_cost(infrastructure),
@@ -905,7 +905,7 @@ resource "aws_iam_role_policy_attachment" "sts_node_registry_policy" {
         return dr_plan
 
 
-def create_cloud_deployment_demo():
+def create_cloud_deployment_demo() -> Dict[str, Any]:
     """Demonstrate cloud deployment capabilities."""
 
     print("☁️ STS Cloud Deployment Demo")

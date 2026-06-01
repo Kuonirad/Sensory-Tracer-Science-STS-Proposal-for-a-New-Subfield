@@ -63,9 +63,9 @@ class AdaptiveProtocolParameters:
 
     # Constraints
     safety_constraints_enabled: bool = True
-    performance_constraints: Dict[str, float] = None
+    performance_constraints: Optional[Dict[str, float]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.performance_constraints is None:
             self.performance_constraints = {
                 "signal_to_noise_ratio": 20.0,  # dB minimum
@@ -94,13 +94,13 @@ class AdvancedExperimentSuite:
         self.adaptive_params = AdaptiveProtocolParameters()
 
         # Experiment state
-        self.active_experiments = {}
-        self.data_streams = {}
-        self.performance_metrics = {}
+        self.active_experiments: Dict[str, Any] = {}
+        self.data_streams: Dict[str, Any] = {}
+        self.performance_metrics: Dict[str, Any] = {}
 
         # Threading for concurrent experiments
-        self.thread_pool = {}
-        self.data_queue = queue.Queue()
+        self.thread_pool: Dict[str, Any] = {}
+        self.data_queue: "queue.Queue[Any]" = queue.Queue()
 
         # AI/ML components
         self.experiment_optimizer = None
@@ -135,8 +135,8 @@ class AdvancedExperimentSuite:
                 raise ValueError(f"Unsupported modality: {modality}")
 
         # Initialize experiments for each modality
-        experiments = {}
-        data_streams = {}
+        experiments: Dict[str, Any] = {}
+        data_streams: Dict[str, Any] = {}
 
         if "neural" in modalities:
             geometry = {"length": 2e-3, "width": 2e-3, "height": 1e-3}
@@ -167,7 +167,7 @@ class AdvancedExperimentSuite:
             thread.join()
 
         # Collect all data from queue
-        collected_data = {}
+        collected_data: Dict[str, Any] = {}
         while not self.data_queue.empty():
             modality, timestamp, data = self.data_queue.get()
             if modality not in collected_data:
@@ -224,7 +224,7 @@ class AdvancedExperimentSuite:
         # Initialize base experiment
         if base_experiment_type == "neural":
             base_geometry = {"length": 2e-3, "width": 2e-3, "height": 1e-3}
-            base_experiment = NeuralTracerExperiment(base_geometry)
+            base_experiment: Any = NeuralTracerExperiment(base_geometry)
         elif base_experiment_type == "quantum":
             base_params = QuantumSensorParameters()
             base_experiment = QuantumTracerExperiment(base_params)
@@ -352,93 +352,10 @@ class AdvancedExperimentSuite:
         with spatial coverage and redundancy.
         """
 
-        print(f"🌐 Distributed Sensing Network: {network_topology}")
-        print(f"Nodes: {node_count}, Duration: {sensing_duration}s")
-
-        # Define network topologies
-        topologies = {
-            "mesh": self._create_mesh_topology,
-            "star": self._create_star_topology,
-            "ring": self._create_ring_topology,
-            "tree": self._create_tree_topology,
-        }
-
-        if network_topology not in topologies:
-            raise ValueError(f"Unsupported topology: {network_topology}")
-
-        # Create network topology
-        network_nodes = topologies[network_topology](node_count)
-
-        # Initialize sensing nodes
-        node_experiments = {}
-        node_threads = {}
-        network_data = {}
-
-        for node_id, node_config in network_nodes.items():
-            # Each node gets a different sensing modality or configuration
-            modality = node_config["modality"]
-
-            if modality == "neural":
-                geometry = {"length": 1e-3, "width": 1e-3, "height": 0.5e-3}
-                node_experiments[node_id] = NeuralTracerExperiment(geometry)
-            elif modality == "quantum":
-                params = QuantumSensorParameters()
-                params.measurement_time = 1e-3  # 1 ms per measurement
-                node_experiments[node_id] = QuantumTracerExperiment(params)
-            elif modality == "brillouin":
-                node_experiments[node_id] = BrillouinTracerExperiment(fiber_length=50.0)
-
-        # Start distributed sensing
-        start_time = time.time()
-
-        for node_id, experiment in node_experiments.items():
-            thread = threading.Thread(
-                target=self._run_network_node,
-                args=(node_id, experiment, network_nodes[node_id], sensing_duration),
-            )
-            thread.start()
-            node_threads[node_id] = thread
-
-        # Monitor network performance
-        network_metrics = self._monitor_network_performance(
-            network_nodes, sensing_duration
+        raise NotImplementedError(
+            "Distributed sensing-network experiments are not implemented in "
+            "this release; the multi-node coordination backend is unavailable."
         )
-
-        # Wait for all nodes to complete
-        for node_id, thread in node_threads.items():
-            thread.join()
-
-        # Collect distributed data
-        for node_id in network_nodes.keys():
-            # Simulate data collection from each node
-            network_data[node_id] = self._collect_node_data(node_id)
-
-        # Network-wide data fusion
-        global_data = self._fuse_network_data(network_data, network_nodes)
-
-        # Analyze network performance
-        network_analysis = self._analyze_network_performance(
-            network_data, network_nodes, network_metrics
-        )
-
-        execution_time = time.time() - start_time
-
-        results = {
-            "experiment_type": "distributed_sensing_network",
-            "network_topology": network_topology,
-            "node_count": node_count,
-            "network_configuration": network_nodes,
-            "node_data": network_data,
-            "global_fused_data": global_data,
-            "network_metrics": network_metrics,
-            "network_analysis": network_analysis,
-            "execution_time": execution_time,
-            "data_coverage_efficiency": network_analysis["coverage_efficiency"],
-            "network_reliability": network_analysis["reliability_score"],
-        }
-
-        print(f"✅ Distributed network experiment completed ({execution_time:.2f}s)")
-        return results
 
     def run_ai_enhanced_discovery_experiment(
         self,
@@ -453,159 +370,19 @@ class AdvancedExperimentSuite:
         or optimize complex experimental conditions.
         """
 
-        print(f"🤖 AI-Enhanced Discovery: {discovery_target}")
-        print(
-            f"Search dimensions: {search_space_dimensions}, Budget: {exploration_budget}"
+        raise NotImplementedError(
+            "AI-enhanced discovery experiments are not implemented in this "
+            "release; the autonomous search backend is unavailable."
         )
-
-        # Initialize AI discovery components
-        exploration_algorithm = "gaussian_process_bandit"
-        acquisition_function = "expected_improvement"
-
-        # Define search space based on discovery target
-        if discovery_target == "optimal_tracer_design":
-            search_space = self._define_tracer_design_space(search_space_dimensions)
-        elif discovery_target == "novel_sensing_modes":
-            search_space = self._define_sensing_mode_space(search_space_dimensions)
-        elif discovery_target == "quantum_enhancement_protocols":
-            search_space = self._define_quantum_protocol_space(search_space_dimensions)
-        else:
-            # Generic multi-dimensional search space
-            search_space = self._define_generic_search_space(search_space_dimensions)
-
-        # Discovery tracking
-        exploration_history = []
-        discovery_log = []
-        performance_frontier = []
-
-        # Initialize Gaussian Process for Bayesian optimization
-        acquisition_history = []
-        model_uncertainty = []
-
-        start_time = time.time()
-
-        for exploration_step in range(exploration_budget):
-            step_start = time.time()
-
-            try:
-                # AI-guided parameter selection
-                if exploration_step < 10:
-                    # Initial random exploration
-                    candidate_point = self._random_search_point(search_space)
-                else:
-                    # Bayesian optimization using Gaussian Process
-                    candidate_point = self._gaussian_process_acquisition(
-                        search_space, exploration_history, acquisition_function
-                    )
-
-                # Execute experiment at candidate point
-                experiment_result = self._execute_discovery_experiment(
-                    candidate_point, discovery_target
-                )
-
-                # Evaluate discovery potential
-                discovery_score = self._evaluate_discovery_potential(
-                    experiment_result, discovery_target
-                )
-
-                # Check for novel phenomena
-                novelty_score = self._assess_novelty(
-                    experiment_result, exploration_history
-                )
-
-                # Update exploration history
-                exploration_entry = {
-                    "step": exploration_step,
-                    "parameters": candidate_point,
-                    "result": experiment_result,
-                    "discovery_score": discovery_score,
-                    "novelty_score": novelty_score,
-                    "timestamp": time.time(),
-                }
-                exploration_history.append(exploration_entry)
-
-                # Log significant discoveries
-                if novelty_score > 0.8 or discovery_score > 0.9:
-                    discovery_entry = {
-                        "discovery_type": "significant_finding",
-                        "parameters": candidate_point,
-                        "description": self._describe_discovery(experiment_result),
-                        "confidence": max(novelty_score, discovery_score),
-                        "step": exploration_step,
-                    }
-                    discovery_log.append(discovery_entry)
-                    print(
-                        f"  🎉 Discovery at step {exploration_step}: {discovery_entry['description']}"
-                    )
-
-                # Update performance frontier (Pareto optimal solutions)
-                performance_frontier = self._update_pareto_frontier(
-                    performance_frontier,
-                    candidate_point,
-                    [discovery_score, novelty_score],
-                )
-
-                # Track acquisition function performance
-                if exploration_step > 10:
-                    acquisition_quality = self._evaluate_acquisition_quality(
-                        candidate_point, exploration_history[-11:-1]
-                    )
-                    acquisition_history.append(acquisition_quality)
-
-                step_time = time.time() - step_start
-
-                if exploration_step % 50 == 0:
-                    print(
-                        f"  Step {exploration_step}: Discovery score: {discovery_score:.3f}, "
-                        f"Novelty: {novelty_score:.3f}"
-                    )
-
-            except Exception as e:
-                print(f"  Step {exploration_step} failed: {e}")
-                continue
-
-        execution_time = time.time() - start_time
-
-        # Analyze discovery results
-        discovery_analysis = self._analyze_discovery_results(
-            exploration_history, discovery_log, performance_frontier
-        )
-
-        # Generate AI discovery report
-        results = {
-            "experiment_type": "ai_enhanced_discovery",
-            "discovery_target": discovery_target,
-            "search_space_dimensions": search_space_dimensions,
-            "total_explorations": len(exploration_history),
-            "discoveries_found": len(discovery_log),
-            "exploration_history": exploration_history,
-            "discovery_log": discovery_log,
-            "performance_frontier": performance_frontier,
-            "discovery_analysis": discovery_analysis,
-            "ai_performance_metrics": {
-                "exploration_efficiency": discovery_analysis["exploration_efficiency"],
-                "discovery_rate": len(discovery_log) / len(exploration_history),
-                "convergence_quality": discovery_analysis["convergence_quality"],
-                "acquisition_effectiveness": (
-                    np.mean(acquisition_history) if acquisition_history else 0
-                ),
-            },
-            "execution_time": execution_time,
-            "computational_efficiency": len(exploration_history) / execution_time,
-        }
-
-        print(f"✅ AI discovery experiment completed ({execution_time:.2f}s)")
-        print(f"  Discoveries found: {len(discovery_log)}")
-        print(
-            f"  Exploration efficiency: {discovery_analysis['exploration_efficiency']:.3f}"
-        )
-
-        return results
 
     # Helper methods for multi-modal sensing
     def _collect_modality_data(
-        self, modality: str, experiment: Any, duration: float, data_queue: queue.Queue
-    ):
+        self,
+        modality: str,
+        experiment: Any,
+        duration: float,
+        data_queue: "queue.Queue[Any]",
+    ) -> None:
         """Collect data from a specific sensing modality."""
 
         measurements_per_second = 10  # 10 Hz sampling
@@ -639,7 +416,7 @@ class AdvancedExperimentSuite:
     ) -> Dict[str, Any]:
         """Synchronize data from multiple modalities in time."""
 
-        synchronized = {}
+        synchronized: Dict[str, Any] = {}
 
         # Find common time base
         all_timestamps = []
@@ -746,7 +523,7 @@ class AdvancedExperimentSuite:
         min_measurements = min(len(registered_data[mod]) for mod in modalities)
 
         for i in range(min_measurements):
-            measurement_fusion = {
+            measurement_fusion: Dict[str, Any] = {
                 "time_index": i,
                 "fused_estimate": {},
                 "confidence_intervals": {},
@@ -764,7 +541,7 @@ class AdvancedExperimentSuite:
             # Perform Bayesian fusion (simplified)
             for measurement_type in ["signal", "intensity", "amplitude"]:
                 estimates = []
-                weights = []
+                weights: Any = []
 
                 for modality, data in current_measurements.items():
                     if isinstance(data, dict) and measurement_type in data:
@@ -930,7 +707,7 @@ class AdvancedExperimentSuite:
         return {"param1": 1.0, "param2": 0.5, "param3": 2.0}
 
     def _run_parameterized_experiment(
-        self, experiment, params: Dict[str, float], exp_type: str
+        self, experiment: Any, params: Dict[str, float], exp_type: str
     ) -> Dict[str, Any]:
         """Run experiment with specific parameters."""
         # Implementation would depend on experiment type
@@ -938,7 +715,7 @@ class AdvancedExperimentSuite:
 
     def _evaluate_performance(self, results: Dict[str, Any], target: str) -> float:
         """Evaluate experiment performance for optimization."""
-        return results.get("performance_metric", 0.0)
+        return float(results.get("performance_metric", 0.0))
 
     def _optimize_parameters(
         self, param_history: List, perf_history: List, current_params: Dict, target: str
@@ -955,7 +732,7 @@ class AdvancedExperimentSuite:
         if len(performance_history) < 10:
             return 0.0
         recent_std = np.std(performance_history[-10:])
-        return 1.0 / (1.0 + recent_std)
+        return float(1.0 / (1.0 + recent_std))
 
     def _calculate_parameter_stability(self, parameter_history: List[Dict]) -> float:
         """Calculate parameter stability metric."""
@@ -968,16 +745,16 @@ class AdvancedExperimentSuite:
             stability = 1.0 / (1.0 + np.std(values))
             stabilities.append(stability)
 
-        return np.mean(stabilities)
+        return float(np.mean(stabilities))
 
     def _analyze_parameter_sensitivity(
         self, param_history: List, perf_history: List
-    ) -> Dict[str, float]:
+    ) -> Dict[str, Any]:
         """Analyze sensitivity of performance to parameter changes."""
         return {"sensitivity_analysis": "Implementation needed"}
 
 
-def run_advanced_experiment_demo():
+def run_advanced_experiment_demo() -> bool:
     """Demonstrate advanced experimental capabilities."""
 
     print("🚀 STS Advanced Experiment Suite Demo")

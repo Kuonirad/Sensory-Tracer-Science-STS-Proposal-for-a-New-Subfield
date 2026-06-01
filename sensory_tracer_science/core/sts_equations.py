@@ -254,9 +254,9 @@ class TracerEnergyContinuity:
         new_energy_field = energy_field + dt * dE_dt
 
         # Ensure energy remains non-negative (physical constraint)
-        new_energy_field = np.maximum(new_energy_field, 0.0)
+        clamped_energy_field: np.ndarray = np.maximum(new_energy_field, 0.0)
 
-        return new_energy_field
+        return clamped_energy_field
 
 
 class WavePropagationWithAttenuation:
@@ -389,7 +389,8 @@ class WavePropagationWithAttenuation:
         kinetic_density = 0.5 * np.abs(psi_dot) ** 2
         potential_density = 0.5 * self.velocity**2 * np.abs(psi) ** 2
 
-        return kinetic_density + potential_density
+        energy_density: np.ndarray = kinetic_density + potential_density
+        return energy_density
 
 
 class STSSystemSolver:
@@ -451,7 +452,7 @@ class STSSystemSolver:
         velocity_field = np.zeros((*spatial_grid.shape[:-1], 3))
 
         for step in range(time_steps):
-            current_time = step * dt
+            current_time = initial_state.time + step * dt
 
             # Evolve energy field
             energy_field = self.energy_continuity.time_evolution(
@@ -499,7 +500,7 @@ def validate_equations() -> Dict[str, Any]:
     Returns:
         Dictionary with validation results
     """
-    results = {}
+    results: Dict[str, Any] = {}
 
     # Test information conservation
     info_solver = ConservationOfSensoryInformation()
@@ -523,16 +524,16 @@ def validate_equations() -> Dict[str, Any]:
         )
         results["causality_check"] = "PASSED"
     except ValueError:
-        results["causality_check"] = "FAILED - velocity exceeds causality limit"
+        results["causality_check"] = "FAILED"
 
     # Test faster-than-light rejection
     try:
         _ = WavePropagationWithAttenuation(
             velocity=4e8, attenuation=1e-3, refractive_index=1.0  # Faster than light
         )
-        results["ftl_rejection"] = "FAILED - should have rejected FTL velocity"
+        results["ftl_rejection"] = "FAILED"
     except ValueError:
-        results["ftl_rejection"] = "PASSED - correctly rejected FTL velocity"
+        results["ftl_rejection"] = "PASSED"
 
     results["validation_status"] = "PASSED"
     return results
