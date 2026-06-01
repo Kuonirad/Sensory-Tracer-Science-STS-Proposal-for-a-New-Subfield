@@ -30,6 +30,8 @@ References:
     Heisenberg, W. (1927). Zeitschrift für Physik, 43(3-4), 172-198.
 """
 
+from typing import Any, Dict
+
 __version__ = "1.0.0"
 __author__ = "STS Development Team"
 __email__ = "sts-dev@example.org"
@@ -139,7 +141,7 @@ FRAMEWORK_INFO = {
 }
 
 
-def get_framework_info():
+def get_framework_info() -> Dict[str, Any]:
     """
     Get information about the STS framework.
 
@@ -149,7 +151,7 @@ def get_framework_info():
     return FRAMEWORK_INFO.copy()
 
 
-def quick_validation_test():
+def quick_validation_test() -> bool:
     """
     Run a quick validation test to verify framework integrity.
 

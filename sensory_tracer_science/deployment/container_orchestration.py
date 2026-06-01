@@ -46,11 +46,11 @@ class ContainerConfig:
     read_only_root_filesystem: bool = True
 
     # Volumes and persistence
-    persistent_volumes: List[Dict[str, str]] = None
-    config_maps: List[str] = None
-    secrets: List[str] = None
+    persistent_volumes: Optional[List[Dict[str, str]]] = None
+    config_maps: Optional[List[str]] = None
+    secrets: Optional[List[str]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.persistent_volumes is None:
             self.persistent_volumes = []
         if self.config_maps is None:
@@ -127,7 +127,7 @@ class ContainerOrchestrator:
             f"🐳 Container Orchestrator initialized for {production_config.environment.value}"
         )
 
-    def _apply_environment_overrides(self):
+    def _apply_environment_overrides(self) -> None:
         """Apply environment-specific container overrides."""
 
         env = self.production_config.environment
@@ -265,7 +265,7 @@ CMD ["python", "-m", "sensory_tracer_science.api.server"]
 
         env_vars = self.production_config.generate_docker_env()
 
-        compose_config = {
+        compose_config: Dict[str, Any] = {
             "version": "3.8",
             "services": {
                 "sts-app": {
@@ -524,7 +524,7 @@ CMD ["python", "-m", "sensory_tracer_science.api.server"]
     def generate_kubernetes_service(self) -> Dict[str, Any]:
         """Generate Kubernetes Service specification."""
 
-        service = {
+        service: Dict[str, Any] = {
             "apiVersion": "v1",
             "kind": "Service",
             "metadata": {
@@ -635,7 +635,7 @@ CMD ["python", "-m", "sensory_tracer_science.api.server"]
         if not self.kubernetes_config.ingress_enabled:
             return {}
 
-        ingress = {
+        ingress: Dict[str, Any] = {
             "apiVersion": "networking.k8s.io/v1",
             "kind": "Ingress",
             "metadata": {
@@ -945,7 +945,7 @@ For deployment issues, contact the STS Development Team.
         return str(package_path)
 
 
-def create_deployment_packages():
+def create_deployment_packages() -> None:
     """Create deployment packages for all environments."""
 
     print("🏗️ Creating Deployment Packages")

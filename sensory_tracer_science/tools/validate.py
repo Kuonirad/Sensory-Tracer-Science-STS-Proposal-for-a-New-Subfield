@@ -229,7 +229,7 @@ def generate_validation_report(
     return report
 
 
-def main():
+def main() -> int:
     """Main entry point for STS validation tool."""
     parser = argparse.ArgumentParser(
         description="Sensory Tracer Science (STS) Validation Tool",

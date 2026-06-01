@@ -97,9 +97,9 @@ class RedisConfig:
 
     # Clustering
     cluster_enabled: bool = False
-    cluster_nodes: List[str] = None
+    cluster_nodes: Optional[List[str]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.cluster_nodes is None:
             self.cluster_nodes = []
 
@@ -127,7 +127,7 @@ class SecurityConfig:
     # API Security
     rate_limiting_enabled: bool = True
     rate_limit_requests_per_minute: int = 1000
-    cors_allowed_origins: List[str] = None
+    cors_allowed_origins: Optional[List[str]] = None
     csrf_protection: bool = True
 
     # Audit and Compliance
@@ -137,10 +137,10 @@ class SecurityConfig:
 
     # Network Security
     ip_whitelist_enabled: bool = False
-    allowed_ip_ranges: List[str] = None
+    allowed_ip_ranges: Optional[List[str]] = None
     vpc_endpoint_enabled: bool = True
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.cors_allowed_origins is None:
             self.cors_allowed_origins = ["https://sts-dashboard.company.com"]
         if self.allowed_ip_ranges is None:
@@ -169,7 +169,7 @@ class MonitoringConfig:
 
     # Alerting
     alerting_enabled: bool = True
-    alert_channels: List[str] = None
+    alert_channels: Optional[List[str]] = None
 
     # Health checks
     health_check_interval: int = 30  # seconds
@@ -179,7 +179,7 @@ class MonitoringConfig:
     apm_enabled: bool = True
     profiling_enabled: bool = False  # Only in non-prod
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.alert_channels is None:
             self.alert_channels = ["email", "slack", "pagerduty"]
 
@@ -242,9 +242,9 @@ class BackupConfig:
 
     # Multi-region replication
     cross_region_backup: bool = True
-    backup_regions: List[str] = None
+    backup_regions: Optional[List[str]] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.backup_regions is None:
             self.backup_regions = ["us-east-1", "us-west-2"]
 
@@ -268,7 +268,7 @@ class SystemConfig:
     build_timestamp: Optional[str] = None
     environment: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.build_timestamp is None:
             self.build_timestamp = datetime.now().isoformat()
 
@@ -312,7 +312,7 @@ class ProductionConfig:
 
         print(f"🔧 Production config initialized for {environment.value}")
 
-    def _apply_environment_overrides(self):
+    def _apply_environment_overrides(self) -> None:
         """Apply environment-specific configuration overrides."""
 
         if self.environment == DeploymentEnvironment.DEVELOPMENT:
@@ -366,7 +366,7 @@ class ProductionConfig:
             self.scaling.min_replicas = 3
             self.scaling.max_replicas = 20  # Limited scaling for stability
 
-    def _load_custom_configurations(self):
+    def _load_custom_configurations(self) -> None:
         """Load custom configurations from files."""
 
         config_file = self.config_path / f"{self.environment.value}.yaml"
@@ -394,14 +394,16 @@ class ProductionConfig:
             except Exception as e:
                 print(f"⚠️ Failed to load custom config: {e}")
 
-    def _update_dataclass(self, dataclass_instance: Any, updates: Dict[str, Any]):
+    def _update_dataclass(
+        self, dataclass_instance: Any, updates: Dict[str, Any]
+    ) -> None:
         """Update dataclass instance with dictionary values."""
 
         for key, value in updates.items():
             if hasattr(dataclass_instance, key):
                 setattr(dataclass_instance, key, value)
 
-    def _validate_configuration(self):
+    def _validate_configuration(self) -> None:
         """Validate configuration for consistency and completeness."""
 
         validation_errors = []
@@ -474,10 +476,10 @@ class ProductionConfig:
             "cors_origins": self.security.cors_allowed_origins,
         }
 
-    def export_config(self, output_path: str):
+    def export_config(self, output_path: str) -> None:
         """Export configuration to file."""
 
-        config_dict = {
+        config_dict: Dict[str, Any] = {
             "environment": self.environment.value,
             "database": asdict(self.database),
             "redis": asdict(self.redis),
@@ -602,7 +604,7 @@ MONITORING CONFIGURATION:
 Metrics Enabled: {self.monitoring.metrics_enabled}
 Log Level: {self.monitoring.log_level}
 Distributed Tracing: {self.monitoring.distributed_tracing_enabled}
-Alert Channels: {', '.join(self.monitoring.alert_channels)}
+Alert Channels: {', '.join(self.monitoring.alert_channels or [])}
 
 BACKUP CONFIGURATION:
 --------------------
@@ -619,7 +621,7 @@ STATUS: READY FOR DEPLOYMENT
         return summary
 
 
-def create_production_configs():
+def create_production_configs() -> None:
     """Create production configurations for all environments."""
 
     print("🏗️ Creating Production Configurations")

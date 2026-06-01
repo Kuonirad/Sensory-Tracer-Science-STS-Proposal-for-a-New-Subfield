@@ -75,8 +75,10 @@ class InclusionCriteria:
 
     min_age: int = 18
     max_age: int = 75
-    required_diagnosis: List[str] = None
-    required_biomarkers: Dict[str, Tuple[float, float]] = None  # name: (min, max)
+    required_diagnosis: Optional[List[str]] = None
+    required_biomarkers: Optional[Dict[str, Tuple[float, float]]] = (
+        None  # name: (min, max)
+    )
     performance_status_min: int = 0  # ECOG performance status
     performance_status_max: int = 2
 
@@ -86,7 +88,7 @@ class InclusionCriteria:
     creatinine_max: float = 1.5  # mg/dL
     bilirubin_max: float = 2.0  # mg/dL
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.required_diagnosis is None:
             self.required_diagnosis = []
         if self.required_biomarkers is None:
@@ -152,7 +154,7 @@ class ClinicalTrialProtocol:
         # Regulatory information
         self.ind_number = None  # FDA Investigational New Drug number
         self.irb_approval = None  # Institutional Review Board approval
-        self.protocol_amendments = []
+        self.protocol_amendments: List[Any] = []
 
         # Study parameters
         self.safety_params = ClinicalSafetyParameters()
@@ -160,19 +162,19 @@ class ClinicalTrialProtocol:
         self.exclusion_criteria = ExclusionCriteria()
 
         # Study population
-        self.enrolled_subjects = {}
-        self.randomization_list = []
-        self.treatment_assignments = {}
+        self.enrolled_subjects: Dict[str, Any] = {}
+        self.randomization_list: List[Any] = []
+        self.treatment_assignments: Dict[str, Any] = {}
 
         # Safety monitoring
-        self.adverse_events = []
-        self.serious_adverse_events = []
-        self.safety_run_in_data = []
+        self.adverse_events: List[Any] = []
+        self.serious_adverse_events: List[Any] = []
+        self.safety_run_in_data: List[Any] = []
 
         # Efficacy data
-        self.primary_endpoints = []
-        self.secondary_endpoints = []
-        self.biomarker_data = {}
+        self.primary_endpoints: List[Any] = []
+        self.secondary_endpoints: List[Any] = []
+        self.biomarker_data: Dict[str, Any] = {}
 
         # Trial status
         self.trial_status = "planning"
@@ -689,7 +691,7 @@ class ClinicalTrialProtocol:
 
     def _calculate_simon_two_stage(
         self, p0: float, p1: float, alpha: float, beta: float
-    ) -> Dict[str, int]:
+    ) -> Dict[str, Any]:
         """Calculate Simon's two-stage design parameters."""
 
         # Simplified calculation (exact calculation requires iterative optimization)
@@ -766,7 +768,7 @@ class ClinicalTrialProtocol:
     def _assess_eligibility(self, subject_data: Dict[str, Any]) -> Dict[str, Any]:
         """Assess subject eligibility against inclusion/exclusion criteria."""
 
-        eligibility_result = {
+        eligibility_result: Dict[str, Any] = {
             "eligible": True,
             "reasons": [],
             "inclusion_criteria_met": [],
@@ -835,7 +837,7 @@ class ClinicalTrialProtocol:
     ) -> Dict[str, Any]:
         """Perform pre-treatment safety assessment."""
 
-        safety_assessment = {
+        safety_assessment: Dict[str, Any] = {
             "cleared": True,
             "reasons": [],
             "vital_signs_stable": True,
@@ -1034,7 +1036,7 @@ TRIAL STATUS: {'ACTIVE' if not self.enrollment_complete else 'COMPLETED'}
 
 
 # Demonstration function
-def run_clinical_trial_demo():
+def run_clinical_trial_demo() -> bool:
     """Demonstrate clinical trial protocol capabilities."""
 
     print("🏥 STS Clinical Trial Protocol Demo")

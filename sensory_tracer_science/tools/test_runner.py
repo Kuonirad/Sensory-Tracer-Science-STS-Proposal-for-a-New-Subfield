@@ -194,7 +194,7 @@ def run_performance_benchmark(
     return benchmark_results
 
 
-def main():
+def main() -> int:
     """Main entry point for STS test runner tool."""
     parser = argparse.ArgumentParser(
         description="Sensory Tracer Science (STS) Test Runner Tool",
@@ -202,7 +202,7 @@ def main():
         epilog="""
 Examples:
   sts-test --biocompatible --tissue-size standard --duration 60
-  sts-test --quantum --precision high  
+  sts-test --quantum --precision high
   sts-test --brillouin --fiber-length 5000 --input-energy 0.5e-9
   sts-test --benchmark --iterations 5
         """,
@@ -344,6 +344,8 @@ Examples:
                     print(f"     Max Time:  {bench_data['max_time']:.2f}s")
 
                 return 0
+
+        return 0
 
     except Exception as e:
         print(f"\n❌ ERROR: {e}")

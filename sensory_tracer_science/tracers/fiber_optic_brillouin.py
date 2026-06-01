@@ -555,7 +555,7 @@ def run_comprehensive_brillouin_tests() -> Dict[str, Any]:
     Returns:
         Dictionary with all test results
     """
-    results = {}
+    results: Dict[str, Any] = {}
 
     # Test 1: Standard operating conditions (1 nJ input)
     experiment = BrillouinTracerExperiment(fiber_length=1000.0)

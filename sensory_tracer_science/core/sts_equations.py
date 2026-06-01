@@ -254,9 +254,9 @@ class TracerEnergyContinuity:
         new_energy_field = energy_field + dt * dE_dt
 
         # Ensure energy remains non-negative (physical constraint)
-        new_energy_field = np.maximum(new_energy_field, 0.0)
+        clamped_energy_field: np.ndarray = np.maximum(new_energy_field, 0.0)
 
-        return new_energy_field
+        return clamped_energy_field
 
 
 class WavePropagationWithAttenuation:
@@ -389,7 +389,8 @@ class WavePropagationWithAttenuation:
         kinetic_density = 0.5 * np.abs(psi_dot) ** 2
         potential_density = 0.5 * self.velocity**2 * np.abs(psi) ** 2
 
-        return kinetic_density + potential_density
+        energy_density: np.ndarray = kinetic_density + potential_density
+        return energy_density
 
 
 class STSSystemSolver:
@@ -499,7 +500,7 @@ def validate_equations() -> Dict[str, Any]:
     Returns:
         Dictionary with validation results
     """
-    results = {}
+    results: Dict[str, Any] = {}
 
     # Test information conservation
     info_solver = ConservationOfSensoryInformation()

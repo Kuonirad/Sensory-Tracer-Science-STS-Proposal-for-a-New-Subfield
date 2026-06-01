@@ -82,10 +82,10 @@ class STSFrameworkTester:
     of STS framework validity.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the comprehensive STS tester."""
-        self.test_results = []
-        self.critical_failures = []
+        self.test_results: List[STSTestResult] = []
+        self.critical_failures: List[STSTestResult] = []
 
     def run_foundational_tests(self) -> STSTestResult:
         """
@@ -101,7 +101,7 @@ class STSFrameworkTester:
         start_time = self._get_time()
         test_passed = True
         error_msg = ""
-        results = {}
+        results: Dict[str, Any] = {}
 
         try:
             # Test physical constants and limits
@@ -151,7 +151,7 @@ class STSFrameworkTester:
             spatial_grid = np.stack([X, Y, Z], axis=3)
 
             # Test with energy continuity that has only dissipation
-            def simple_dissipation(energy, pos, time):
+            def simple_dissipation(energy: float, pos: Any, time: float) -> float:
                 return energy * 1e3  # Simple exponential decay: dE/dt = -kE
 
             energy_continuity = TracerEnergyContinuity(
@@ -463,7 +463,7 @@ class STSFrameworkTester:
         start_time = self._get_time()
         test_passed = True
         error_msg = ""
-        results = {}
+        results: Dict[str, Any] = {}
 
         try:
             # Test cross-platform validation consistency
@@ -472,7 +472,7 @@ class STSFrameworkTester:
             # Create identical test scenarios for all validators
             validator = STSValidator()
 
-            test_scenarios = [
+            test_scenarios: List[Dict[str, Any]] = [
                 {
                     "name": "perfect_conservation",
                     "data": {
@@ -517,7 +517,7 @@ class STSFrameworkTester:
                 },
             ]
 
-            validation_consistency_results = {}
+            validation_consistency_results: Dict[str, Any] = {}
 
             for scenario in test_scenarios:
                 validation_result = validator.full_validation(scenario["data"])
@@ -739,44 +739,44 @@ class TestSTSFramework(unittest.TestCase):
     Unittest integration for STS framework testing.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test environment."""
         self.tester = STSFrameworkTester()
 
-    def test_foundational_components(self):
+    def test_foundational_components(self) -> None:
         """Test foundational STS components."""
         result = self.tester.run_foundational_tests()
         self.assertTrue(
             result.passed, f"Foundational tests failed: {result.error_message}"
         )
 
-    def test_validation_protocols(self):
+    def test_validation_protocols(self) -> None:
         """Test STS validation protocols."""
         result = self.tester.run_validation_protocol_tests()
         self.assertTrue(
             result.passed, f"Validation protocol tests failed: {result.error_message}"
         )
 
-    def test_fiber_optic_implementation(self):
+    def test_fiber_optic_implementation(self) -> None:
         """Test fiber-optic Brillouin tracer."""
         result = self.tester.run_fiber_optic_implementation_tests()
         self.assertTrue(
             result.passed, f"Fiber-optic tests failed: {result.error_message}"
         )
 
-    def test_biocompatible_implementation(self):
+    def test_biocompatible_implementation(self) -> None:
         """Test biocompatible neural tracer."""
         result = self.tester.run_biocompatible_implementation_tests()
         self.assertTrue(
             result.passed, f"Biocompatible tests failed: {result.error_message}"
         )
 
-    def test_quantum_implementation(self):
+    def test_quantum_implementation(self) -> None:
         """Test quantum-enhanced tracer."""
         result = self.tester.run_quantum_implementation_tests()
         self.assertTrue(result.passed, f"Quantum tests failed: {result.error_message}")
 
-    def test_framework_integration(self):
+    def test_framework_integration(self) -> None:
         """Test STS framework integration."""
         result = self.tester.run_integration_tests()
         self.assertTrue(
@@ -789,7 +789,7 @@ class TestSTSFramework(unittest.TestCase):
 # ============================================================================
 
 
-def main():
+def main() -> int:
     """
     Main function to run complete STS framework validation.
 

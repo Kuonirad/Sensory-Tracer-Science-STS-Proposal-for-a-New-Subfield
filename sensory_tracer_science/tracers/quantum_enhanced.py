@@ -177,7 +177,7 @@ class HongOuMandelInterferometer:
             parameters: Quantum sensor parameters
         """
         self.params = parameters
-        self.photon_statistics = []  # Record of detection events
+        self.photon_statistics: List[Any] = []  # Record of detection events
 
     def hong_ou_mandel_probability(
         self, path_delay: float, photon_pair: QuantumPhotonPair
@@ -207,7 +207,7 @@ class HongOuMandelInterferometer:
         # HOM probability (perfect antibunching at τ=0 for ideal case)
         P_coincidence = 0.5 * (1 - effective_visibility * temporal_envelope)
 
-        return P_coincidence
+        return float(P_coincidence)
 
     def measure_coincidences(
         self,
@@ -321,11 +321,11 @@ class QuantumEnhancedSensoryTracer:
         self.validator = STSValidator()
 
         # Quantum state tracking
-        self.entanglement_fidelity_history = []
-        self.phase_measurements = []
+        self.entanglement_fidelity_history: List[Any] = []
+        self.phase_measurements: List[Any] = []
 
     def quantum_phase_sensing(
-        self, sensing_parameter: float, measurement_duration: float = None
+        self, sensing_parameter: float, measurement_duration: Optional[float] = None
     ) -> Dict[str, Any]:
         """
         Perform quantum-enhanced phase sensing measurement.
@@ -768,7 +768,7 @@ def run_quantum_tracer_tests() -> Dict[str, Any]:
     Returns:
         Dictionary with all test results
     """
-    results = {}
+    results: Dict[str, Any] = {}
 
     # Test 1: Standard quantum sensing experiment
     standard_params = QuantumSensorParameters()
