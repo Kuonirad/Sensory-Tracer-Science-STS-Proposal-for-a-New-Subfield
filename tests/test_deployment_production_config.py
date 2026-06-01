@@ -107,7 +107,7 @@ class TestDatabaseConfig(unittest.TestCase):
             port=5433,
             database="sts_custom",
             username="custom_user",
-            password_env_var="CUSTOM_DB_PASSWORD",
+            password_env_var="CUSTOM_DB_PASSWORD",  # noqa: S106 - env var name, not a secret
             min_connections=10,
             max_connections=200,
             connection_timeout=60,
@@ -203,7 +203,7 @@ class TestRedisConfig(unittest.TestCase):
         config = RedisConfig(
             host="redis.company.com",
             port=6380,
-            password_env_var="CUSTOM_REDIS_PASSWORD",
+            password_env_var="CUSTOM_REDIS_PASSWORD",  # noqa: S106 - env var name, not a secret
             database=1,
             max_connections=100,
             socket_timeout=10,
@@ -293,7 +293,7 @@ class TestSecurityConfig(unittest.TestCase):
 
         config = SecurityConfig(
             authentication_method="oauth2",
-            jwt_secret_env_var="CUSTOM_JWT_SECRET",
+            jwt_secret_env_var="CUSTOM_JWT_SECRET",  # noqa: S106 - env var name, not a secret
             jwt_expiration_hours=12,
             multi_factor_auth_required=False,
             rbac_enabled=False,

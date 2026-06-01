@@ -317,7 +317,7 @@ class TestProductionConfigIntegration(unittest.TestCase):
             port=5433,
             database="sts_test",
             username="test_user",
-            password_env_var="TEST_DB_PASSWORD",
+            password_env_var="TEST_DB_PASSWORD",  # noqa: S106 - env var name, not a secret
             min_connections=10,
             max_connections=200,
             backup_enabled=True,

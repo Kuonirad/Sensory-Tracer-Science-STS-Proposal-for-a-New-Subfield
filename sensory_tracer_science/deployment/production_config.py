@@ -47,7 +47,8 @@ class DatabaseConfig:
     port: int = 5432
     database: str = "sts_production"
     username: str = "sts_user"
-    password_env_var: str = "STS_DB_PASSWORD"
+    # Name of the env var that holds the secret, not the secret itself.
+    password_env_var: str = "STS_DB_PASSWORD"  # noqa: S105
 
     # Connection pool settings
     min_connections: int = 5
@@ -79,7 +80,8 @@ class RedisConfig:
     # Connection parameters
     host: str = "localhost"
     port: int = 6379
-    password_env_var: str = "STS_REDIS_PASSWORD"
+    # Name of the env var that holds the secret, not the secret itself.
+    password_env_var: str = "STS_REDIS_PASSWORD"  # noqa: S105
     database: int = 0
 
     # Performance settings
@@ -110,7 +112,8 @@ class SecurityConfig:
 
     # Authentication
     authentication_method: str = "jwt"
-    jwt_secret_env_var: str = "STS_JWT_SECRET"
+    # Name of the env var that holds the secret, not the secret itself.
+    jwt_secret_env_var: str = "STS_JWT_SECRET"  # noqa: S105
     jwt_expiration_hours: int = 24
     multi_factor_auth_required: bool = True
 
@@ -260,7 +263,9 @@ class SystemConfig:
     log_level: str = "INFO"
 
     # Server settings
-    host: str = "0.0.0.0"
+    # Binds all interfaces by design: the app runs inside a container/pod and
+    # is only reachable through the orchestrator's network policy + ingress.
+    host: str = "0.0.0.0"  # noqa: S104
     port: int = 8080
     workers: int = 4
 

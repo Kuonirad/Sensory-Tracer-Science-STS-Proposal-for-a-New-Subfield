@@ -89,7 +89,9 @@ class AnalysisConfig:
 class ServerConfig:
     """Configuration for web server and API."""
     
-    host: str = "0.0.0.0"
+    # Binds all interfaces by design for containerized deployment; restrict via
+    # the deployment's network policy / reverse proxy rather than here.
+    host: str = "0.0.0.0"  # noqa: S104
     port: int = 8000
     debug: bool = False
     cors_enabled: bool = True

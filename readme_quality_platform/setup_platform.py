@@ -25,11 +25,15 @@ def print_step(step: str):
     print("-" * 50)
 
 
-def run_command(cmd: str, description: str) -> bool:
-    """Run command and return success status."""
+def run_command(cmd: list, description: str) -> bool:
+    """Run command and return success status.
+
+    ``cmd`` must be a list of arguments (e.g. ``["pip", "install", pkg]``) so
+    that it is executed without a shell, avoiding shell-injection risks.
+    """
     print(f"⚙️  {description}...")
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
             print(f"✅ {description} - SUCCESS")
             return True
@@ -71,7 +75,7 @@ def install_dependencies():
     
     success_count = 0
     for dep in core_deps:
-        if run_command(f"pip install '{dep}'", f"Installing {dep.split('>=')[0]}"):
+        if run_command([sys.executable, "-m", "pip", "install", dep], f"Installing {dep.split('>=')[0]}"):
             success_count += 1
     
     print(f"\n📊 Installed {success_count}/{len(core_deps)} core dependencies")
@@ -89,7 +93,7 @@ def install_dependencies():
     
     optional_success = 0
     for dep, desc in optional_deps:
-        if run_command(f"pip install '{dep}'", f"Installing {desc}"):
+        if run_command([sys.executable, "-m", "pip", "install", dep], f"Installing {desc}"):
             optional_success += 1
     
     print(f"📊 Installed {optional_success}/{len(optional_deps)} optional dependencies")
@@ -215,7 +219,7 @@ def test_installation():
     
     demo_file = Path("demo_working.py")
     if demo_file.exists():
-        if run_command("python demo_working.py", "Platform demonstration"):
+        if run_command([sys.executable, "demo_working.py"], "Platform demonstration"):
             return True
     
     print("⚠️  Demo test skipped - file not found")
