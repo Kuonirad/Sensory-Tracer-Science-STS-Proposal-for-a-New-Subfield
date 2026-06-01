@@ -1,0 +1,445 @@
+\documentclass[11pt,a4paper]{article}
+
+% ============================================================================
+% Sensory Tracer Science (STS): A Proposal for a New Subfield
+% arXiv-ready manuscript (theory + in-silico framework)
+%
+% NOTE TO SUBMITTER: This source compiles with pdflatex + bibtex:
+%   pdflatex main && bibtex main && pdflatex main && pdflatex main
+% (or simply: latexmk -pdf main.tex)
+% Update the \author block and ORCID/affiliation before submission.
+% ============================================================================
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+\geometry{margin=1in}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  citecolor=blue!50!black,
+  urlcolor=blue!50!black
+}
+
+\newtheorem{axiom}{Axiom}[section]
+\newtheorem{definition}{Definition}[section]
+
+\title{\textbf{Sensory Tracer Science (STS): A Conservation-Law\\
+Framework for Auditable Signal Propagation in\\
+Biological and Computational Media}}
+
+% ----------------------------------------------------------------------------
+% TODO (submitter): replace with your real name, affiliation, email, ORCID.
+% ----------------------------------------------------------------------------
+\author{%
+  Kevin Kull\thanks{Corresponding author: \texttt{kevinkull.kk@gmail.com}.
+  Affiliation and ORCID to be completed by the submitting author.}\\
+  \small Sensory Tracer Science Project\\
+  \small \url{https://github.com/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield}
+}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We propose \emph{Sensory Tracer Science} (STS), a candidate subfield that studies
+the \emph{energy-conserving}, \emph{information-preserving}, and
+\emph{causality-respecting} propagation of sensory signals through distributed
+media. STS introduces no new physics. Instead it imposes a stricter
+\emph{accounting} discipline: every traced signal must close three independent
+ledgers---an energy balance grounded in Landauer's principle and the first law of
+thermodynamics, an information balance grounded in Shannon theory, and a causality
+constraint grounded in the finite speed of propagation in a medium. We formalize
+the framework as five axioms ($\mathrm{A1}$--$\mathrm{A5}$) reduced from
+established results (Landauer, Shannon, Heisenberg, special relativity, and
+cellular bioenergetics), derive a governing set of continuity and wave-propagation
+equations, and define a \emph{triple-audit} validation protocol with explicit
+numerical tolerances. We present a reference open-source implementation that
+realizes the framework across three modalities in simulation---fiber-optic
+(Brillouin) tracers, biocompatible neural tracers, and quantum-enhanced
+tracers---and that subjects each to the same three audits. We then show that the
+\emph{same} audit engine applies, unchanged, to a second domain: by treating the
+activation flow of a reasoning/inference stack as ``synthetic neural tissue,'' STS
+yields an end-to-end energy/information/causality account of how a signal
+propagates through a computational pipeline, making auditable attribution a
+first-class primitive. All results reported here are theoretical and in-silico;
+we make no wet-lab validation claims, and we are explicit about which quantities
+are derived from first principles versus parameterized from the literature. We
+argue that the principal contribution of STS is not any single tracer but a
+falsifiable, conservation-first methodology---one we apply reflexively to the
+project's own software and documentation.
+\end{abstract}
+
+\noindent\textbf{Keywords:} sensory tracers; information thermodynamics;
+Landauer's principle; conservation laws; biophysics; neural tracing; quantum
+sensing; interpretability; auditable attribution.
+
+\section{Introduction}
+\label{sec:intro}
+
+Tracing a signal through a medium is a recurring problem across the sciences: a
+fluorophore through neural tissue, an acoustic phonon through an optical fiber, an
+entangled photon through a detector array, or---increasingly---an activation
+through the layers of a computational inference stack. Each community has its own
+validation idiom: histology for neural tracers, tomography for quantum sensing,
+calibration for distributed sensor networks. What these idioms share, and what no
+single community enforces uniformly, is a commitment to the conservation laws that
+ultimately bound \emph{any} physical signal: energy cannot be created, information
+cannot be detected where it was never injected, and nothing propagates faster than
+the medium allows.
+
+We propose \emph{Sensory Tracer Science} (STS) as a subfield organized entirely
+around this commitment. The central thesis is deliberately conservative:
+
+\begin{quote}
+\itshape STS introduces no new physics. It introduces a stricter accounting of
+existing physics, applied uniformly to every traced signal regardless of the
+medium it traverses.
+\end{quote}
+
+This ``zero-new-physics'' stance is a feature, not a limitation. By refusing to
+add laws and instead demanding that every implementation \emph{close its books}
+against three independent ledgers, STS produces claims that are falsifiable in the
+strict sense: an implementation either passes its energy, information, and
+causality audits within stated tolerances, or it does not. The unit of validation
+is the audit, not the anecdote.
+
+\paragraph{Contributions.}
+\begin{enumerate}[leftmargin=1.4em]
+  \item We axiomatize STS as five constraints reduced from established physics
+        (Section~\ref{sec:axioms}) and a small set of governing equations
+        (Section~\ref{sec:equations}).
+  \item We define a \emph{triple-audit} validation protocol with explicit
+        numerical tolerances and a binary pass/fail outcome
+        (Section~\ref{sec:audit}).
+  \item We describe a reference implementation that applies the protocol to three
+        physical tracer modalities in simulation
+        (Section~\ref{sec:domains}).
+  \item We show the same audit engine extends, without modification, to
+        computational pipelines by treating activation flow as synthetic neural
+        tissue---turning end-to-end attribution into an auditable primitive
+        (Section~\ref{sec:bridge}).
+  \item We discuss the project's reflexive application of the same
+        conservation/audit discipline to its own software and prose
+        (Section~\ref{sec:meta}), and we state the framework's limitations
+        plainly (Section~\ref{sec:limitations}).
+\end{enumerate}
+
+\paragraph{Scope and honesty statement.}
+Everything reported in this manuscript is theoretical or obtained from
+deterministic in-silico simulation of the framework's own equations. We make
+\emph{no} claim of wet-lab or clinical validation. Where a quantity is derived
+from first principles we say so; where it is parameterized from the experimental
+literature (e.g.\ diffusion coefficients, ATP free energy, two-photon cross
+sections) we label it as such and cite the source. Distinguishing these two
+categories is itself part of the STS accounting discipline.
+
+\section{Foundational Axioms}
+\label{sec:axioms}
+
+STS rests on five axioms. Each is a constraint \emph{reduced from} an established
+result; none asserts a new law.
+
+\begin{axiom}[Information--energy conservation]\label{ax:a1}
+Information and energy are distinct but jointly bounded by conservation laws.
+Erasing one bit dissipates at least $k_B T \ln 2$ joules (Landauer's
+principle~\citep{landauer1961irreversibility,bennett1982thermodynamics}), and
+every continuous symmetry corresponds to a conserved quantity. In a closed
+system, energy used to encode information is neither created nor destroyed, and
+information loss manifests as entropy increase and heat.
+\end{axiom}
+
+\begin{axiom}[Speed limit in a medium]\label{ax:a2}
+No tracer propagates faster than $v \le c/n$, where $c$ is the vacuum speed of
+light and $n\ge 1$ the medium's refractive index. This is the causality
+constraint.
+\end{axiom}
+
+\begin{axiom}[Second law]\label{ax:a3}
+Total entropy production is non-negative, $\Delta S_\mathrm{total}\ge 0$; any local
+decrease must be compensated globally. No tracer is perfectly efficient and heat
+production is unavoidable.
+\end{axiom}
+
+\begin{axiom}[Measurement uncertainty]\label{ax:a4}
+Measurement injects noise bounded below by the Heisenberg
+limit~\citep{heisenberg1927uncertainty}: conjugate-variable products satisfy
+$\Delta x\,\Delta p \ge \hbar/2$. This sets the ultimate sensitivity floor.
+\end{axiom}
+
+\begin{axiom}[Biological energy budget]\label{ax:a5}
+In biological media, sustainable signal processing is bounded by metabolic supply.
+ATP hydrolysis provides on the order of $|\Delta G_\mathrm{ATP}|\approx
+57\,\mathrm{kJ\,mol^{-1}}$ (pH 7.4, $1\,\mathrm{mM\;Mg^{2+}}$,
+$37^{\circ}\mathrm{C}$), capping the rate of information processing in living
+tissue.
+\end{axiom}
+
+These axioms are governed by five meta-axioms enforcing internal consistency:
+every axiom must be derivable from physical observables; no two may contradict
+under any conditions; any violation must be traceable to a single axiom; the
+framework must be invariant under reference-frame transformations; and---most
+importantly---STS introduces no new physics, only new organization of existing
+physics.
+
+\section{Governing Equations}
+\label{sec:equations}
+
+\paragraph{Conservation of sensory information.}
+The total traced information is modeled as a conserved functional of sensor
+density $\rho_\mathrm{sensor}$ and local tracer energy $E_\mathrm{tracer}$:
+\begin{equation}
+I_\mathrm{total}
+= \iiint \rho_\mathrm{sensor}(\bm{r},t)\,
+  \log_2\!\left(1 + \frac{E_\mathrm{tracer}(\bm{r},t)}{k_B T}\right)
+  \, d^3r\, dt = \text{const},
+\label{eq:info}
+\end{equation}
+where the logarithmic term is the Shannon channel capacity of a thermally limited
+link~\citep{shannon1948mathematical}.
+
+\paragraph{Tracer energy continuity.}
+Energy density obeys a continuity equation with non-negative dissipation:
+\begin{equation}
+\frac{\partial E_\mathrm{tracer}}{\partial t}
++ \nabla\cdot \bm{J}_\mathrm{tracer}
+= -\,P_\mathrm{dissipation} + P_\mathrm{source},
+\qquad P_\mathrm{dissipation}\ge 0,
+\label{eq:continuity}
+\end{equation}
+which enforces Axioms~\ref{ax:a1} and~\ref{ax:a3} pointwise.
+
+\paragraph{Damped wave propagation.}
+Tracer fields propagate as damped, driven waves
+\begin{equation}
+\frac{\partial^2 \psi}{\partial t^2}
+= v^2 \nabla^2 \psi - \gamma\,\frac{\partial \psi}{\partial t}
++ S_\mathrm{sensor}(\bm{r},t),
+\qquad v \le c/n,
+\label{eq:wave}
+\end{equation}
+with attenuation coefficient $\gamma\ge 0$ and the speed bound from
+Axiom~\ref{ax:a2}.
+
+\paragraph{Representative closed-form predictions.}
+From the equations above and the axioms, several quantities follow directly and
+serve as testable predictions:
+\begin{align}
+E_\mathrm{min} &= k_B T \ln 2 &&\text{(minimum energy per bit)},\\
+L_\mathrm{max} &= \frac{v}{\gamma}\,\ln\!\frac{E_0}{k_B T}
+  &&\text{(max.\ range before signal $\to$ thermal floor)},\\
+T_2 &\le \frac{\hbar}{2 k_B T} &&\text{(thermal coherence-time bound)}.
+\end{align}
+At $T=300\,\mathrm{K}$, $E_\mathrm{min}\approx 2.87\times10^{-21}\,\mathrm{J\,bit^{-1}}$;
+the coherence bound gives $T_2 \lesssim 1.3\times10^{-14}\,\mathrm{s}$. These are
+order-of-magnitude consistency checks, not engineering specifications.
+
+\section{The Triple-Audit Validation Protocol}
+\label{sec:audit}
+
+The operational core of STS is a validation protocol that every implementation
+must pass. It comprises three independent audits, each with an explicit tolerance,
+and yields a binary outcome: failure of \emph{any} audit invalidates the system.
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item \textbf{Energy audit.}
+  \begin{equation}
+  \bigl| E_\mathrm{in} - (E_\mathrm{out} + E_\mathrm{dissipated}) \bigr|
+  \;<\; \varepsilon_E\, E_\mathrm{in},
+  \end{equation}
+  with $\varepsilon_E = 10^{-12}$ (picojoule-per-joule, set by numerical
+  precision). Separately, dissipation is checked against the Landauer floor
+  $k_B T \ln 2$ per erased bit as a physical-plausibility flag.
+
+  \item \textbf{Information balance.}
+  \begin{equation}
+  \bigl| I_\mathrm{injected} - (I_\mathrm{detected} + I_\mathrm{lost}) \bigr|
+  \;<\; \varepsilon_I\, I_\mathrm{injected},
+  \qquad \varepsilon_I = 10^{-2}.
+  \end{equation}
+  Shannon content and step-wise mutual information are computed along the trace.
+
+  \item \textbf{Causality check.}
+  \begin{equation}
+  v_\mathrm{signal} \le v_\mathrm{medium}, \qquad \text{tolerance } = 0
+  \end{equation}
+  (zero tolerance for faster-than-medium propagation), augmented by a
+  time-of-flight check.
+\end{enumerate}
+
+The reference implementation realizes these as three auditor classes
+(\texttt{EnergyAuditor}, \texttt{InformationAuditor}, \texttt{CausalityAuditor})
+composed by a top-level \texttt{STSValidator}. Constants are pinned to CODATA
+recommended values~\citep{codata2018}.
+
+\section{Implementation Domains (In-Silico)}
+\label{sec:domains}
+
+The reference framework instantiates the protocol across three modalities. All
+results below are from deterministic simulation of the framework's equations under
+the stated constraints; none are wet-lab measurements.
+
+\subsection{Fiber-optic (Brillouin) tracers}
+Acousto-optic tracing via Brillouin
+scattering~\citep{brillouin1922scattering}, constrained to
+$<1\,\mathrm{nJ}$ input to avoid nonlinear damage, with silica refractive index
+$n=1.46$ and telecom-band attenuation. The audit verifies energy conservation in
+the optical--acoustic interaction.
+
+\subsection{Biocompatible neural tracers}
+Diffusion--advection with metabolic clearance, parameterized from the literature:
+free $\mathrm{Ca^{2+}}$ diffusion ($D\approx 2.2\times10^{-10}\,\mathrm{m^2\,s^{-1}}$,
+$37^{\circ}\mathrm{C}$)~\citep{einstein1905motion,fick1855diffusion}, cytoplasmic
+viscosity, blood--brain-barrier clearance, and ATP-bounded energy budgets
+(Axiom~\ref{ax:a5}). Modeled constraints include tracer concentration
+$<1\,\mu\mathrm{M}$, ATP depletion rate $<0.1\,\mathrm{mM\,s^{-1}}$, and
+phototoxic dose $<50\,\mathrm{J\,mm^{-3}}$. Supporting electrochemistry uses the
+Nernst~\citep{nernst1888theory} and Debye--H\"uckel~\citep{debye1923theory}
+relations, with membrane biophysics following
+Hodgkin--Huxley~\citep{hodgkin1952quantitative} and Hille~\citep{hille2001ionic}.
+
+\subsection{Quantum-enhanced tracers}
+Entangled-photon tracing constrained by photon flux
+($<10^9\,\mathrm{photons\,pixel^{-1}\,s^{-1}}$), antibunching
+($g^{(2)}(0)<0.1$), and the thermal coherence bound of Axiom~\ref{ax:a4}. The
+audit enforces the Heisenberg-limited noise floor.
+
+\paragraph{Uncertainty handling.}
+Where literature parameters carry uncertainty (e.g.\ logBB, $k_\mathrm{off}$,
+quantum yield, photobleaching rate), the framework propagates Gaussian
+uncertainties by Monte Carlo ($N=10^4$) and reports the resulting spread rather
+than point estimates.
+
+\section{From Tissue to Reasoning Stacks: Auditable Attribution as a Primitive}
+\label{sec:bridge}
+
+A computational inference pipeline shares the STS primitives: a kernel transforms
+an activation state, that transformation costs energy (Landauer-bounded compute),
+it preserves or loses information, and steps form a directed acyclic graph (DAG)
+of strictly ordered causality. STS exploits this structurally rather than
+metaphorically: it treats an activation flow as \emph{synthetic neural tissue} and
+runs the \emph{same} triple audit over the stack.
+
+Concretely, given a sequence of kernels $K_1,\dots,K_m$ (duck-typed callables
+$\mathbb{R}^d\!\to\!\mathbb{R}^d$) and an initial activation $\bm{a}_0$, an
+attributor produces an enriched trace reporting:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{energy efficiency} $E_\mathrm{out}/E_\mathrm{in}$ over the chain,
+        with propagation accounting constructed to satisfy
+        $E_\mathrm{in}=E_\mathrm{out}+E_\mathrm{dissipated}$ exactly so the energy
+        audit passes by construction, while the Landauer floor is flagged
+        separately;
+  \item \textbf{information fidelity} $I_\mathrm{detected}/I_\mathrm{injected}$ via
+        Shannon content and step-wise mutual information;
+  \item \textbf{Landauer efficiency}: dissipation relative to the $k_B T \ln 2$
+        bound, a physical-realism flag;
+  \item \textbf{causality}: DAG acyclicity plus a normalized medium-speed budget
+        per transition.
+\end{itemize}
+
+The payoff is that \emph{end-to-end attribution becomes a first-class, auditable
+primitive}: any reasoning loop can be wrapped to obtain a conservation-checked
+account of how a signal propagates through it. The same three ledgers that
+validate a biological tracer validate a computational one. This is the dual-use
+bridge at the heart of the proposal---one engine, two domains, no new physics. We
+emphasize that the energy figures here are an \emph{accounting} abstraction over
+activation norms, not a hardware power measurement; the contribution is the
+auditable bookkeeping, not a claim about wall-clock joules.
+
+\section{Reflexive Integrity: Auditing the Project Itself}
+\label{sec:meta}
+
+STS applies its own discipline reflexively. The reference project ships
+self-validation scripts that re-derive constants and check axiom consistency at
+import time, machine-checked audit artifacts, and readability tooling that holds
+the documentation to a measured standard. The intent is methodological
+consistency: a framework whose thesis is ``close your books'' should close its
+own. We regard this self-referential accounting as part of the contribution, not
+decoration---it makes the project's claims about itself as falsifiable as its
+claims about tracers.
+
+\section{Comparison with Existing Fields}
+\label{sec:comparison}
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{@{}lllll@{}}
+\toprule
+\textbf{Feature} & \textbf{STS} & \textbf{Neural tracing} & \textbf{Quantum sensing} & \textbf{Distributed sensors}\\
+\midrule
+Conservation law   & derived & empirical & quantum & engineering\\
+Energy bound       & $k_B T\ln 2$ & ATP-limited & $\hbar\omega$ & battery life\\
+Causality          & strict & approximate & strict & approximate\\
+Information metric  & $I_\mathrm{total}=$const & connectivity map & Fisher info & SNR\\
+Validation         & triple audit & histology & tomography & calibration\\
+\bottomrule
+\end{tabular}
+\caption{STS contrasted with adjacent fields. STS's distinguishing feature is a
+uniform, derived, triple-audit validation applied across media.}
+\label{tab:compare}
+\end{table}
+
+Table~\ref{tab:compare} situates STS. It is not a competitor to these fields but a
+cross-cutting methodology: any of them could adopt the triple audit without
+abandoning its native instrumentation.
+
+\section{Limitations and Threats to Validity}
+\label{sec:limitations}
+
+We state limitations plainly, consistent with the framework's accounting ethos.
+\begin{enumerate}[leftmargin=1.6em]
+  \item \textbf{No wet-lab validation.} All quantitative results are in-silico.
+        The biological constraints are parameterized from the literature, not
+        measured in this work. Claims of biocompatibility or clinical readiness
+        are \emph{not} made here.
+  \item \textbf{Audit-by-construction.} In the computational bridge, the energy
+        ledger is satisfied by construction; its value is bookkeeping
+        transparency, not an independent measurement of compute energy.
+  \item \textbf{Model abstraction.} Equations~\eqref{eq:info}--\eqref{eq:wave} are
+        deliberately reduced; real media exhibit nonlinearity, anisotropy, and
+        active transport beyond the modeled terms.
+  \item \textbf{Scope of novelty.} STS contributes organization and methodology,
+        not new physical law; readers seeking new dynamics will not find them
+        here, by design.
+\end{enumerate}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have proposed Sensory Tracer Science as a conservation-first subfield whose
+unit of validation is a triple audit---energy, information, causality---applied
+uniformly to any traced signal, biological or computational. The framework adds no
+physics; it adds discipline. Its reference implementation demonstrates the
+protocol in simulation across three physical modalities and, using the identical
+audit engine, across computational inference stacks, making auditable end-to-end
+attribution a first-class primitive. We view the methodology, applied reflexively
+to the project's own artifacts, as the durable contribution. The natural next step
+is precisely the one STS is built to invite: an adversarial, wet-lab test that
+tries to make a real tracer \emph{fail} its books.
+
+\section*{Code and Data Availability}
+The reference implementation, self-validation scripts, and this manuscript source
+are available at
+\url{https://github.com/Kuonirad/Sensory-Tracer-Science-STS-Proposal-for-a-New-Subfield}
+under the MIT license. No new experimental datasets were generated.
+
+\section*{Acknowledgments}
+We thank the open-source scientific-computing community whose libraries and
+constants (CODATA) underpin the reference implementation.
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}
